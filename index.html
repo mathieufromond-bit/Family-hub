@@ -112,6 +112,7 @@
             </select>
             <button class="btn-add" onclick="addCustomItem()">Ajouter</button>
         </div>
+        
         <div class="main-content">
             <div class="panel">
                 <h3 style="color: #e26e00; margin-top:0;">📦 Drive (<span id="countDrive">0</span>)</h3>
@@ -122,7 +123,14 @@
                 <div id="listMagasin"></div>
             </div>
         </div>
+
         <div id="syncStatus" style="font-size:12px; color:#888; margin-top:10px; text-align:center;">🔄 Connexion...</div>
+
+        <!-- LE CATALOGUE RAPIDE EST DE RETOUR ICI -->
+        <div class="panel" style="margin-top: 20px;">
+            <h3 style="margin-top:0; color:var(--primary);">⚡ Ajout Rapide (Catalogue)</h3>
+            <div id="catalogContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;"></div>
+        </div>
     </div>
 
     <!-- APP ÉCOLE -->
@@ -172,7 +180,7 @@
         <p style="text-align:center; font-weight:bold;">Trouve la case : <span id="targetSquare" style="color:#8e44ad; font-size:1.5em;">--</span></p>
         <div class="chessboard" id="board"></div>
         <p id="chessFeedback" style="text-align:center; font-weight:bold; height:20px;"></p>
-        <button class="action-btn" onclick="saveScore('S'est entraîné(e) aux échecs')" style="background:#3498db; margin-top:10px;">✅ J'ai fini mon entraînement !</button>
+        <button class="action-btn" onclick="saveScore('S\'est entraîné(e) aux échecs')" style="background:#3498db; margin-top:10px;">✅ J'ai fini mon entraînement !</button>
     </div>
 
 </div>
@@ -185,6 +193,7 @@
     let currentUser = null;
     let isCurrentParent = false;
 
+    // L'URL EUROPE EST INCLUSE ICI
     const firebaseConfig = {
         apiKey: "AIzaSyAcwjPfC_ObEaW9PsoWLhCmMFaMoCqSKXU",
         authDomain: "appli-familiale-13423.firebaseapp.com",
@@ -195,7 +204,7 @@
         appId: "1:17165557696:web:9233d277ac5f72bfd17225"
     };
     firebase.initializeApp(firebaseConfig);
-    const dbFirebase = firebase.database(); // Renommé pour éviter le conflit avec "db" de l'école
+    const dbFirebase = firebase.database(); 
 
     // =========================================================================
     // 2. LOGIQUE DE CONNEXION & NAVIGATION
@@ -227,11 +236,10 @@
         document.getElementById('logoutBtn').style.display = 'block';
         document.getElementById('userNameDisplay').innerText = currentUser;
         
-        // Afficher ou masquer les boutons "J'ai fini" selon si c'est un enfant
         document.getElementById('btnFinished').style.display = isCurrentParent ? 'none' : 'block';
         
         buildDashboard();
-        initCourses(); // Charge Firebase pour les courses
+        initCourses();
     }
 
     function logout() {
@@ -276,22 +284,60 @@
     }
 
     // =========================================================================
-    // 3. LOGIQUE FIREBASE : COURSES
+    // 3. LOGIQUE FIREBASE : COURSES ET CATALOGUE
     // =========================================================================
     let currentList = [];
+    
+    // Le catalogue par défaut que vous aviez dans l'ancienne version
+    const defaultCatalog = {
+        "Drive": { label: "📦 Drive (Stock)", items: ["Pellets", "Sel Adoucisseur", "SPA Reine Eau", "Gros Perrier", "Petit Perrier", "Lait Suite Nutril.2", "Couches", "Papier WC"] },
+        "Magasin": { label: "🛒 Magasin (Frais)", items: ["Pain", "Gouda en tranches", "Jambon", "Oeufs Plein Air", "Tomates", "Bananes", "Pommes", "Haché de poulet"] }
+    };
+    let catalog = JSON.parse(JSON.stringify(defaultCatalog));
+
     function initCourses() {
-        if(!isCurrentParent) return; // Seuls les parents chargent les courses
+        if(!isCurrentParent) return;
         dbFirebase.ref('coursesTribu').on('value', (snapshot) => {
             const data = snapshot.val();
             currentList = (data && data.list) ? data.list : [];
+            catalog = (data && data.catalog) ? data.catalog : defaultCatalog;
             document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
             renderLists();
+            renderCatalog();
         });
     }
 
     function pushToFirebase() {
         document.getElementById('syncStatus').innerText = "🔄 Synchronisation...";
-        dbFirebase.ref('coursesTribu').update({ list: currentList });
+        dbFirebase.ref('coursesTribu').set({ list: currentList, catalog: catalog });
+    }
+
+    function renderCatalog() {
+        const container = document.getElementById('catalogContainer');
+        if(!container) return;
+        container.innerHTML = '';
+        for (const [key, data] of Object.entries(catalog)) {
+            const catDiv = document.createElement('div');
+            catDiv.innerHTML = `<div style="font-weight:bold; margin-bottom:5px; border-bottom:1px solid #ccc; padding-bottom:5px;">${data.label}</div>`;
+            const sortedItems = [...new Set(data.items)].sort((a, b) => a.localeCompare(b));
+            sortedItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item';
+                itemDiv.innerHTML = `<span>${item}</span><button style="background:#28a745; color:white; border:none; border-radius:4px; padding:5px 12px; cursor:pointer;" onclick="addItem('${item.replace(/'/g, "\\'")}', '${key}', 1)">+</button>`;
+                catDiv.appendChild(itemDiv);
+            });
+            container.appendChild(catDiv);
+        }
+    }
+
+    function addItem(name, type, qty) {
+        const existingItem = currentList.find(i => i.name === name && i.type === type && !i.checked);
+        if (existingItem) existingItem.quantity += parseInt(qty);
+        else currentList.push({ id: Date.now() + Math.random(), name: name, type: type, quantity: parseInt(qty), checked: false });
+        
+        // Apprentissage automatique : ajoute le mot au catalogue s'il n'y est pas
+        if (!catalog[type].items.includes(name)) catalog[type].items.push(name);
+        pushToFirebase();
     }
 
     function addCustomItem() {
@@ -299,8 +345,7 @@
         const qty = parseInt(document.getElementById('newItemQty').value) || 1;
         const type = document.getElementById('itemType').value;
         if (name) {
-            currentList.push({ id: Date.now(), name: name.charAt(0).toUpperCase() + name.slice(1), type: type, quantity: qty, checked: false });
-            pushToFirebase();
+            addItem(name.charAt(0).toUpperCase() + name.slice(1), type, qty);
             document.getElementById('newItemInput').value = '';
         }
     }
@@ -323,39 +368,29 @@
             const div = document.createElement('div');
             div.className = `item ${item.checked ? 'checked' : ''}`;
             div.innerHTML = `<span>${item.quantity}x ${item.name}</span>
-                             <div><button onclick="toggleCheck(${item.id})">✓</button> <button onclick="removeById(${item.id})">X</button></div>`;
+                             <div><button style="background:#17a2b8; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;" onclick="toggleCheck(${item.id})">✓</button> 
+                             <button style="background:#dc3545; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;" onclick="removeById(${item.id})">X</button></div>`;
             if(item.type === 'Drive') cDrive.appendChild(div); else cMagasin.appendChild(div);
         });
         document.getElementById('countDrive').innerText = countD; document.getElementById('countMagasin').innerText = countM;
     }
 
     // =========================================================================
-    // 4. LOGIQUE FIREBASE : SAUVEGARDE DES SCORES (NOUVEAU)
+    // 4. LOGIQUE FIREBASE : SAUVEGARDE DES SCORES
     // =========================================================================
     function saveScore(activite) {
-        if(isCurrentParent) return; // On n'enregistre que les filles
-        
-        // Enregistre dans Firebase sous activites/Elina ou activites/Amanda
+        if(isCurrentParent) return;
         dbFirebase.ref('activites/' + currentUser).push({
             date: new Date().toLocaleString(),
             tache: activite
         });
-        
         alert("Super ! Papa et Maman ont reçu ton travail. 🌟");
-        showDashboard(); // Retour à l'accueil
+        showDashboard();
     }
 
     // =========================================================================
     // 5. LOGIQUE ÉCOLE (Exercices, Néerlandais, Echecs)
     // =========================================================================
-    const schoolData = {
-        fr: {
-            P1: { 1: ["Sépare : MOTO", "Trouve la voyelle : P _ PA"], 2: ["Sépare : CHEVAL"], 3: ["Complète : un ch_en"] },
-            P2: { 1: ["Mets au pluriel : Le chat"], 2: ["Mets au féminin : Un chien"], 3: ["Sujet ou Verbe ?"] }
-        },
-        math: { /* Géré par l'algorithme */ }
-    }; // (J'ai raccourci l'objet data ici pour l'exemple, l'algorithme Math tourne tout seul !)
-
     function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1) + min); }
 
     function generateExercise() {
@@ -370,7 +405,7 @@
                 html += `${i}) ${n1} + ${n2} = ... <br><br>`;
             }
         } else {
-            html += "Réponds aux questions sur une feuille :<br><br>1) Question 1... <br>2) Question 2..."; // Extrait simplifié
+            html += "Réponds aux questions sur une feuille :<br><br>1) Question 1... <br>2) Question 2...";
         }
         document.getElementById('exerciseOutput').innerHTML = html;
         document.getElementById('btnFinished').style.display = isCurrentParent ? 'none' : 'block';
