@@ -11,6 +11,7 @@
         :root {
             --bg: #f4f7f6; --primary: #2c3e50; --accent: #3498db;
             --parent-color: #e3000f; --kids-color: #27ae60;
+            --messenger: #0084ff;
         }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 800px; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
@@ -47,15 +48,36 @@
 
         .app-view { display: none; padding: 20px; }
 
-        /* --- STYLES COURSES --- */
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .controls input, .controls select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .btn-add { background-color: #0050aa; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+        /* --- STYLES COURSES (Importés de courses.html) --- */
+        .drive-links { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .drive-links a { flex: 1; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; color: white; font-weight: bold; min-width: 120px; }
+        .link-colruyt { background-color: #e26e00; }
+        .link-intermarche { background-color: #212529; }
+        .link-delhaize { background-color: #e3000f; }
+
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .controls input[type="text"] { flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; min-width: 150px; }
+        .controls input[type="number"].qty-input-main { flex: 0.5; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; min-width: 60px; text-align: center; }
+        .controls select { padding: 10px; border-radius: 5px; border: 1px solid #ccc; flex: 1.5; min-width: 140px; }
+        
+        .btn-add { background-color: #0050aa; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; color: white; flex: 1; min-width: 100px; }
+        
         .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 600px) { .main-content { grid-template-columns: 1fr; } }
+        
         .panel { background: var(--bg); padding: 15px; border-radius: 8px; }
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: white; margin-bottom: 5px; border-radius: 4px; }
-        .item.checked { text-decoration: line-through; opacity: 0.6; }
+        .category-title { font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid #ddd; padding-bottom: 3px; color: var(--parent-color); }
+        .category-drive { color: #e26e00; }
+
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: white; margin-bottom: 5px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .item.checked { text-decoration: line-through; opacity: 0.6; background: #e9ecef; }
+        .item-actions { display: flex; align-items: center; gap: 5px; }
+        .item button { padding: 5px 10px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .qty-inline { width: 45px; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 14px; }
+        
+        .add-btn { background-color: #28a745; }
+        .remove-btn { background-color: #dc3545; }
+        .check-btn { background-color: #17a2b8; }
 
         /* --- STYLES ÉCOLE --- */
         .form-group select, .form-group button { width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc; }
@@ -92,7 +114,7 @@
         <h2 id="pinTitle">Code secret pour </h2>
         <input type="password" id="pinInput" class="pin-input" maxlength="4" onkeyup="checkPin()">
         <p style="color:red; display:none;" id="pinError">Code incorrect</p>
-        <button onclick="logout()" style="padding:10px; margin-top:20px;">Annuler</button>
+        <button onclick="logout()" style="padding:10px; margin-top:20px; border:none; background:#ccc; border-radius:5px; cursor:pointer;">Annuler</button>
     </div>
 
     <!-- TABLEAU DE BORD -->
@@ -103,33 +125,45 @@
 
     <!-- APP COURSES -->
     <div id="app-courses" class="app-view">
+        <div style="text-align: center; font-style: italic; color: #666; margin-top: -10px; margin-bottom: 20px; font-size: 14px;">Organisation Hybride : Drive (Stock) + Magasin (Frais)</div>
+
+        <div class="drive-links">
+            <a href="https://www.collectandgo.be/" target="_blank" class="link-colruyt">🚗 Collect&Go</a>
+            <a href="https://www.intermarche.be/" target="_blank" class="link-intermarche">🛒 Intermarché</a>
+            <a href="https://www.delhaize.be/" target="_blank" class="link-delhaize">🦁 Delhaize</a>
+        </div>
+
         <div class="controls">
-            <input type="text" id="newItemInput" placeholder="Ajouter (ex: Pommes)" style="flex:2">
-            <input type="number" id="newItemQty" value="1" min="1" style="flex:0.5">
-            <select id="itemType" style="flex:1">
-                <option value="Magasin">🛒 Magasin</option>
-                <option value="Drive">📦 Drive</option>
+            <input type="text" id="newItemInput" placeholder="Ajouter un produit (ex: Pommes)">
+            <input type="number" id="newItemQty" class="qty-input-main" value="1" min="1">
+            <select id="itemType">
+                <option value="magasin">🛒 Magasin (Frais)</option>
+                <option value="drive">📦 Drive (Stock)</option>
             </select>
             <button class="btn-add" onclick="addCustomItem()">Ajouter</button>
         </div>
         
         <div class="main-content">
             <div class="panel">
-                <h3 style="color: #e26e00; margin-top:0;">📦 Drive (<span id="countDrive">0</span>)</h3>
+                <h2 style="color: #e26e00;">📦 Commande Drive (<span id="countDrive">0</span>)</h2>
                 <div id="listDrive"></div>
             </div>
             <div class="panel">
-                <h3 style="color: #27ae60; margin-top:0;">🛒 Magasin (<span id="countMagasin">0</span>)</h3>
+                <h2 style="color: var(--primary);">🛒 À prendre en Magasin (<span id="countMagasin">0</span>)</h2>
                 <div id="listMagasin"></div>
             </div>
         </div>
 
+        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="shareList()" style="background-color: var(--messenger); flex: 2; min-width: 200px; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight:bold;">💬 Partager via Messenger</button>
+            <button onclick="clearList()" style="background-color: #6c757d; flex: 1; min-width: 100px; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight:bold;">Vider tout</button>
+        </div>
+
         <div id="syncStatus" style="font-size:12px; color:#888; margin-top:10px; text-align:center;">🔄 Connexion...</div>
 
-        <!-- LE CATALOGUE RAPIDE EST DE RETOUR ICI -->
         <div class="panel" style="margin-top: 20px;">
-            <h3 style="margin-top:0; color:var(--primary);">⚡ Ajout Rapide (Catalogue)</h3>
-            <div id="catalogContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;"></div>
+            <h2 style="margin-top:0; color:var(--primary);">Ajout Rapide</h2>
+            <div id="catalogContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;"></div>
         </div>
     </div>
 
@@ -193,7 +227,6 @@
     let currentUser = null;
     let isCurrentParent = false;
 
-    // L'URL EUROPE EST INCLUSE ICI
     const firebaseConfig = {
         apiKey: "AIzaSyAcwjPfC_ObEaW9PsoWLhCmMFaMoCqSKXU",
         authDomain: "appli-familiale-13423.firebaseapp.com",
@@ -262,7 +295,7 @@
             <button class="widget bg-chess" onclick="openApp('app-chess', '♟️ Échecs')"><div class="icon">♟️</div><div>Échecs</div></button>
         `;
         if (isCurrentParent) {
-            grid.innerHTML = `<button class="widget bg-courses" onclick="openApp('app-courses', '🛒 Courses')"><div class="icon">🛒</div><div>Courses</div></button>` + grid.innerHTML;
+            grid.innerHTML = `<button class="widget bg-courses" onclick="openApp('app-courses', '🛒 Courses & Stock Tribu')"><div class="icon">🛒</div><div>Courses</div></button>` + grid.innerHTML;
         }
     }
 
@@ -288,11 +321,28 @@
     // =========================================================================
     let currentList = [];
     
-    // Le catalogue par défaut que vous aviez dans l'ancienne version
     const defaultCatalog = {
-        "Drive": { label: "📦 Drive (Stock)", items: ["Pellets", "Sel Adoucisseur", "SPA Reine Eau", "Gros Perrier", "Petit Perrier", "Lait Suite Nutril.2", "Couches", "Papier WC"] },
-        "Magasin": { label: "🛒 Magasin (Frais)", items: ["Pain", "Gouda en tranches", "Jambon", "Oeufs Plein Air", "Tomates", "Bananes", "Pommes", "Haché de poulet"] }
+        "📦 Stock Garage / Maison (Drive)": {
+            type: "drive",
+            items: [
+                "Pellets (Chauffage)", "Sel Adoucisseur", 
+                "SPA Reine Eau", "Eau Minérale / Gazeuse", "Pepsi x3", 
+                "Lait Suite Nutril.2", "Couches", "Lingettes BB Eau", 
+                "Papier WC", "Essuie-tout 3LG", "Lessive", 
+                "Litière Chat", "Croquettes Chat"
+            ]
+        },
+        "🛒 Frais & Dépannage (Magasin)": {
+            type: "magasin",
+            items: [
+                "Pain / Baguette", "Gouda en tranches", "Jambon dégraissé", 
+                "Filet de York", "Oeufs Plein Air", "Tomates Snack", 
+                "Bananes", "Pommes", "Haché de poulet", 
+                "Boisson de Soja Vanille"
+            ]
+        }
     };
+    
     let catalog = JSON.parse(JSON.stringify(defaultCatalog));
 
     function initCourses() {
@@ -305,6 +355,12 @@
             renderLists();
             renderCatalog();
         });
+        
+        document.getElementById("newItemInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); addCustomItem();
+            }
+        });
     }
 
     function pushToFirebase() {
@@ -316,14 +372,16 @@
         const container = document.getElementById('catalogContainer');
         if(!container) return;
         container.innerHTML = '';
-        for (const [key, data] of Object.entries(catalog)) {
+        for (const [category, data] of Object.entries(catalog)) {
             const catDiv = document.createElement('div');
-            catDiv.innerHTML = `<div style="font-weight:bold; margin-bottom:5px; border-bottom:1px solid #ccc; padding-bottom:5px;">${data.label}</div>`;
+            const isDrive = data.type === 'drive';
+            catDiv.innerHTML = `<div class="category-title ${isDrive ? 'category-drive' : ''}">${category}</div>`;
+            
             const sortedItems = [...new Set(data.items)].sort((a, b) => a.localeCompare(b));
             sortedItems.forEach(item => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'item';
-                itemDiv.innerHTML = `<span>${item}</span><button style="background:#28a745; color:white; border:none; border-radius:4px; padding:5px 12px; cursor:pointer;" onclick="addItem('${item.replace(/'/g, "\\'")}', '${key}', 1)">+</button>`;
+                itemDiv.innerHTML = `<span>${item}</span><button class="add-btn" onclick="addItem('${item.replace(/'/g, "\\'")}', '${data.type}', 1)">+</button>`;
                 catDiv.appendChild(itemDiv);
             });
             container.appendChild(catDiv);
@@ -332,21 +390,37 @@
 
     function addItem(name, type, qty) {
         const existingItem = currentList.find(i => i.name === name && i.type === type && !i.checked);
-        if (existingItem) existingItem.quantity += parseInt(qty);
-        else currentList.push({ id: Date.now() + Math.random(), name: name, type: type, quantity: parseInt(qty), checked: false });
+        if (existingItem) {
+            existingItem.quantity += parseInt(qty);
+        } else {
+            currentList.push({ id: Date.now() + Math.random(), name: name, type: type, quantity: parseInt(qty), checked: false });
+        }
         
-        // Apprentissage automatique : ajoute le mot au catalogue s'il n'y est pas
-        if (!catalog[type].items.includes(name)) catalog[type].items.push(name);
+        // Apprentissage de nouveaux mots pour le catalogue
+        const catKey = type === 'drive' ? "📦 Stock Garage / Maison (Drive)" : "🛒 Frais & Dépannage (Magasin)";
+        if (!catalog[catKey].items.includes(name)) catalog[catKey].items.push(name);
+        
         pushToFirebase();
     }
 
     function addCustomItem() {
-        const name = document.getElementById('newItemInput').value.trim();
-        const qty = parseInt(document.getElementById('newItemQty').value) || 1;
-        const type = document.getElementById('itemType').value;
-        if (name) {
-            addItem(name.charAt(0).toUpperCase() + name.slice(1), type, qty);
-            document.getElementById('newItemInput').value = '';
+        const input = document.getElementById('newItemInput');
+        const qtyInput = document.getElementById('newItemQty');
+        const typeSelect = document.getElementById('itemType');
+        const value = input.value.trim();
+        const qty = parseInt(qtyInput.value) || 1;
+        
+        if (value) {
+            addItem(value.charAt(0).toUpperCase() + value.slice(1), typeSelect.value, qty);
+            input.value = ''; qtyInput.value = '1';
+        }
+    }
+
+    function updateQuantity(id, newQty) {
+        const item = currentList.find(i => i.id === id);
+        if(item) {
+            item.quantity = Math.max(1, parseInt(newQty) || 1);
+            pushToFirebase();
         }
     }
 
@@ -359,20 +433,69 @@
         currentList = currentList.filter(item => item.id !== id); pushToFirebase();
     }
 
+    function clearList() {
+        if(confirm("Vider entièrement la liste ?")) {
+            currentList = []; pushToFirebase();
+        }
+    }
+
     function renderLists() {
-        const cDrive = document.getElementById('listDrive'); const cMagasin = document.getElementById('listMagasin');
-        cDrive.innerHTML = ''; cMagasin.innerHTML = '';
-        let countD = 0, countM = 0;
+        const containerDrive = document.getElementById('listDrive');
+        const containerMagasin = document.getElementById('listMagasin');
+        containerDrive.innerHTML = ''; containerMagasin.innerHTML = '';
+        
+        let countDrive = 0, countMagasin = 0;
+
         currentList.forEach((item) => {
-            if(!item.checked) { if(item.type === 'Drive') countD++; else countM++; }
-            const div = document.createElement('div');
-            div.className = `item ${item.checked ? 'checked' : ''}`;
-            div.innerHTML = `<span>${item.quantity}x ${item.name}</span>
-                             <div><button style="background:#17a2b8; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;" onclick="toggleCheck(${item.id})">✓</button> 
-                             <button style="background:#dc3545; color:white; border:none; padding:5px 8px; border-radius:4px; cursor:pointer;" onclick="removeById(${item.id})">X</button></div>`;
-            if(item.type === 'Drive') cDrive.appendChild(div); else cMagasin.appendChild(div);
+            if(!item.checked) {
+                if(item.type === 'drive') countDrive++;
+                else countMagasin++;
+            }
+            
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `item ${item.checked ? 'checked' : ''}`;
+            itemDiv.innerHTML = `
+                <span>${item.name}</span>
+                <div class="item-actions">
+                    <input type="number" class="qty-inline" value="${item.quantity}" min="1" onchange="updateQuantity(${item.id}, this.value)">
+                    <button class="check-btn" onclick="toggleCheck(${item.id})">✓</button>
+                    <button class="remove-btn" onclick="removeById(${item.id})">X</button>
+                </div>
+            `;
+            
+            if(item.type === 'drive') containerDrive.appendChild(itemDiv);
+            else containerMagasin.appendChild(itemDiv);
         });
-        document.getElementById('countDrive').innerText = countD; document.getElementById('countMagasin').innerText = countM;
+
+        document.getElementById('countDrive').innerText = countDrive;
+        document.getElementById('countMagasin').innerText = countMagasin;
+    }
+
+    function shareList() {
+        let itemsDrive = currentList.filter(i => !i.checked && i.type === 'drive');
+        let itemsMagasin = currentList.filter(i => !i.checked && i.type === 'magasin');
+        
+        if (itemsDrive.length === 0 && itemsMagasin.length === 0) return alert("Rien à acheter !");
+
+        let text = "🛒 *Courses de la Tribu* :\n\n";
+        
+        if(itemsDrive.length > 0) {
+            text += "📦 *COMMANDE DRIVE* :\n";
+            itemsDrive.forEach(i => text += "• " + i.quantity + "x " + i.name + "\n");
+            text += "\n";
+        }
+        
+        if(itemsMagasin.length > 0) {
+            text += "🛒 *EN MAGASIN (Frais)* :\n";
+            itemsMagasin.forEach(i => text += "• " + i.quantity + "x " + i.name + "\n");
+        }
+
+        if (navigator.share) {
+            navigator.share({ title: 'Courses', text: text }).catch(e => console.log(e));
+        } else {
+            navigator.clipboard.writeText(text);
+            alert("Liste copiée ! Vous pouvez maintenant la coller dans votre conversation Messenger.");
+        }
     }
 
     // =========================================================================
@@ -411,14 +534,12 @@
         document.getElementById('btnFinished').style.display = isCurrentParent ? 'none' : 'block';
     }
 
-    // Néerlandais
     const nlDict = { colors: [{fr:"Rouge", nl:"Rood"}, {fr:"Bleu", nl:"Blauw"}], animals: [{fr:"Chien", nl:"Hond"}], numbers: [{fr:"Un (1)", nl:"Een"}] };
     let currentNlWord = {}; let isShowingFr = true;
     function nextNlWord() { const arr = nlDict[document.getElementById('nlCategory').value]; currentNlWord = arr[randomInt(0, arr.length-1)]; isShowingFr = true; updateCard(); }
     function flipCard() { isShowingFr = !isShowingFr; updateCard(); }
     function updateCard() { const card = document.getElementById('nlCard'); card.innerText = isShowingFr ? currentNlWord.fr : currentNlWord.nl; card.style.background = isShowingFr ? "#2980b9" : "#f39c12"; }
 
-    // Echecs
     let cTarget = ""; const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     function initBoard() { const board = document.getElementById('board'); if(board.innerHTML !== "") return; for (let row = 8; row >= 1; row--) { for (let col = 0; col < 8; col++) { const square = document.createElement('div'); square.className = 'square ' + ((row + col) % 2 !== 0 ? 'black' : 'white'); const coord = letters[col] + row; square.onclick = () => { if(coord === cTarget) { document.getElementById('chessFeedback').innerText = "✅ Bravo !"; setTimeout(nextTarget, 800); } else { document.getElementById('chessFeedback').innerText = "❌ Non, c'est " + coord; } }; board.appendChild(square); } } }
     function nextTarget() { cTarget = letters[randomInt(0,7)] + (randomInt(0,7)+1); document.getElementById('targetSquare').innerText = cTarget; document.getElementById('chessFeedback').innerText = ""; }
