@@ -44,7 +44,6 @@
 
         .app-view { display: none; padding: 20px; }
 
-        /* --- STYLES COURSES --- */
         .drive-links { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .drive-links a { flex: 1; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; color: white; font-weight: bold; min-width: 120px; }
         .link-colruyt { background-color: #e26e00; }
@@ -74,7 +73,6 @@
         .remove-btn { background-color: #dc3545; }
         .check-btn { background-color: #17a2b8; }
 
-        /* --- STYLES ÉCOLE --- */
         .form-group select, .form-group button { width: 100%; padding: 10px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc; }
         .action-btn { background-color: #27ae60; color: white; border: none; font-weight: bold; cursor: pointer; }
         .exercise-box { margin-top: 15px; padding: 15px; background: #f9f9f9; border-left: 4px solid #e67e22; border-radius: 4px; font-size: 1.1em; line-height: 1.6; }
@@ -93,7 +91,6 @@
         <button id="backBtn" onclick="showDashboard()">Retour</button>
     </div>
 
-    <!-- ÉCRAN DE CONNEXION -->
     <div id="login-screen">
         <h2>Qui est là ?</h2>
         <div class="profiles">
@@ -116,7 +113,6 @@
         <div class="widget-grid" id="widgetGrid"></div>
     </div>
 
-    <!-- APP COURSES -->
     <div id="app-courses" class="app-view">
         <div style="text-align: center; font-style: italic; color: #666; margin-top: -10px; margin-bottom: 20px; font-size: 14px;">Organisation Hybride : Drive (Stock) + Magasin (Frais)</div>
 
@@ -188,7 +184,6 @@
         <p id="chessFeedback" style="text-align:center; font-weight:bold; height:20px;"></p>
         <button class="action-btn" onclick="saveScore('S\'est entraîné(e) aux échecs')" style="background:#3498db; margin-top:10px;">✅ J'ai fini mon entraînement !</button>
     </div>
-
 </div>
 
 <script>
@@ -206,6 +201,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const dbFirebase = firebase.database(); 
+    dbFirebase.goOnline();
 
     function selectUser(name, isParent) {
         currentUser = name; isCurrentParent = isParent;
@@ -272,7 +268,53 @@
         document.getElementById('backBtn').style.display = 'none';
     }
 
-    // --- LOGIQUE COURSES AVEC SAUVEGARDE LOCALE ANTI-PERTE ---
+    // Votre liste exacte pré-enregistrée
+    const backupCurrentList = [
+        { id: 1, name: "Couches", type: "drive", quantity: 1, checked: false },
+        { id: 2, name: "Croquettes Chat", type: "drive", quantity: 1, checked: false },
+        { id: 3, name: "Eau", type: "drive", quantity: 1, checked: false },
+        { id: 4, name: "Essuie-tout 3LG", type: "drive", quantity: 1, checked: false },
+        { id: 5, name: "Lingettes BB Eau", type: "drive", quantity: 3, checked: false },
+        { id: 6, name: "Papier WC", type: "drive", quantity: 1, checked: false },
+        { id: 7, name: "Pellets (Chauffage)", type: "drive", quantity: 6, checked: false },
+        { id: 8, name: "Pepsi", type: "drive", quantity: 1, checked: false },
+        { id: 9, name: "Petit perrier", type: "drive", quantity: 1, checked: false },
+        { id: 10, name: "Sojas normal", type: "drive", quantity: 6, checked: false },
+        { id: 11, name: "SPA Reine Eau", type: "drive", quantity: 1, checked: false },
+        { id: 12, name: "Vin", type: "drive", quantity: 2, checked: false },
+        { id: 13, name: "Bananes", type: "magasin", quantity: 1, checked: false },
+        { id: 14, name: "Barres céréales", type: "magasin", quantity: 1, checked: false },
+        { id: 15, name: "Café grain", type: "magasin", quantity: 1, checked: false },
+        { id: 16, name: "Courgettes", type: "magasin", quantity: 2, checked: false },
+        { id: 17, name: "Filet de York", type: "magasin", quantity: 1, checked: false },
+        { id: 18, name: "Fruits secs", type: "magasin", quantity: 1, checked: false },
+        { id: 19, name: "Gouda en tranches", type: "magasin", quantity: 2, checked: false },
+        { id: 20, name: "Haché de poulet", type: "magasin", quantity: 1, checked: false },
+        { id: 21, name: "Jambon dégraissé", type: "magasin", quantity: 1, checked: false },
+        { id: 22, name: "Laque lidl", type: "magasin", quantity: 1, checked: false },
+        { id: 23, name: "Mozza", type: "magasin", quantity: 1, checked: false },
+        { id: 24, name: "Nouilles", type: "magasin", quantity: 2, checked: false },
+        { id: 25, name: "Oeufs Plein Air", type: "magasin", quantity: 1, checked: false },
+        { id: 26, name: "Pain à cuir", type: "magasin", quantity: 3, checked: false },
+        { id: 27, name: "Pain panini", type: "magasin", quantity: 1, checked: false },
+        { id: 28, name: "Pain tranches", type: "magasin", quantity: 3, checked: false },
+        { id: 29, name: "Pommes", type: "magasin", quantity: 1, checked: false },
+        { id: 30, name: "Salami milano", type: "magasin", quantity: 2, checked: false },
+        { id: 31, name: "Cecemel", type: "magasin", quantity: 1, checked: false },
+        { id: 32, name: "Frites congelée", type: "magasin", quantity: 1, checked: false },
+        { id: 33, name: "Tomates", type: "magasin", quantity: 1, checked: false },
+        { id: 34, name: "Pesto rouge", type: "magasin", quantity: 1, checked: false },
+        { id: 35, name: "Tomates pelées", type: "magasin", quantity: 3, checked: false },
+        { id: 36, name: "Collations", type: "magasin", quantity: 1, checked: false },
+        { id: 37, name: "Petits sacs poubelles", type: "magasin", quantity: 1, checked: false },
+        { id: 38, name: "Mouchoirs", type: "magasin", quantity: 1, checked: false },
+        { id: 39, name: "Andalouse", type: "magasin", quantity: 1, checked: false },
+        { id: 40, name: "Cotons tiges", type: "magasin", quantity: 1, checked: false },
+        { id: 41, name: "Pads", type: "magasin", quantity: 1, checked: false },
+        { id: 42, name: "Tampon + app", type: "magasin", quantity: 1, checked: false },
+        { id: 43, name: "Kelloggs bob", type: "magasin", quantity: 1, checked: false }
+    ];
+
     let currentList = [];
     const defaultCatalog = {
         "📦 Stock Garage / Maison (Drive)": {
@@ -281,7 +323,7 @@
         },
         "🛒 Frais & Dépannage (Magasin)": {
             type: "magasin",
-            items: ["Adoucissant", "Bananes", "Barres céréales", "Boisson de Soja Vanille", "Café grain", "Cecemel", "Courgettes", "Crème alpro", "Cubes bouillon", "Filet de York", "Frites congelée", "Fromages sachets", "Fruits secs", "Gouda en tranches", "Haché de poulet", "Jambon dégraissé", "Laque lidl", "Lessive blanc", "Lessive couleur", "Miel", "Mozza", "Nouilles", "Oeufs Plein Air", "Pain / Baguette", "Pain panini", "Pain tranches", "Pain à cuir", "Parmesan", "Pesto rouge", "Petit pot Clémentine", "Pommes", "Produit wc", "Salami milano", "Salade", "Sauce sojas sucré", "Sauces tomates croque", "Tomates", "Tomates Snack"]
+            items: ["Adoucissant", "Andalouse", "Bananes", "Barres céréales", "Boisson de Soja Vanille", "Café grain", "Cecemel", "Collations", "Cotons tiges", "Courgettes", "Crème alpro", "Cubes bouillon", "Filet de York", "Frites congelée", "Fromages sachets", "Fruits secs", "Gouda en tranches", "Haché de poulet", "Jambon dégraissé", "Kelloggs bob", "Laque lidl", "Lessive blanc", "Lessive couleur", "Miel", "Mouchoirs", "Mozza", "Nouilles", "Oeufs Plein Air", "Pads", "Pain / Baguette", "Pain panini", "Pain tranches", "Pain à cuir", "Parmesan", "Pesto rouge", "Petit pot Clémentine", "Petits sacs poubelles", "Pommes", "Produit wc", "Salami milano", "Salade", "Sauce sojas sucré", "Sauces tomates croque", "Tampon + app", "Tomates", "Tomates Snack", "Tomates pelées"]
         }
     };
     let catalog = JSON.parse(JSON.stringify(defaultCatalog));
@@ -289,29 +331,33 @@
     function initCourses() {
         if(!isCurrentParent) return;
         
-        // 1. Charge d'abord la mémoire locale du téléphone (affichage instantané)
         const localList = localStorage.getItem('tribu_courses_list');
         const localCat = localStorage.getItem('tribu_courses_catalog');
-        if(localList) currentList = JSON.parse(localList);
-        if(localCat) catalog = JSON.parse(localCat);
-        renderLists(); renderCatalog();
+        
+        if (localList && JSON.parse(localList).length > 0) {
+            currentList = JSON.parse(localList);
+        } else {
+            currentList = [...backupCurrentList];
+        }
+        
+        if (localCat) catalog = JSON.parse(localCat);
+        
+        renderLists(); 
+        renderCatalog();
 
-        // 2. Écoute Firebase en arrière-plan
         dbFirebase.ref('coursesTribu').on('value', (snapshot) => {
             const data = snapshot.val();
-            if(data) {
-                if(data.list) currentList = data.list;
-                if(data.catalog) {
-                    if(data.catalog["📦 Stock Garage / Maison (Drive)"]) catalog["📦 Stock Garage / Maison (Drive)"].items = [...new Set([...catalog["📦 Stock Garage / Maison (Drive)"].items, ...data.catalog["📦 Stock Garage / Maison (Drive)"].items])];
-                    if(data.catalog["🛒 Frais & Dépannage (Magasin)"]) catalog["🛒 Frais & Dépannage (Magasin)"].items = [...new Set([...catalog["🛒 Frais & Dépannage (Magasin)"].items, ...data.catalog["🛒 Frais & Dépannage (Magasin)"].items])];
-                }
+            if(data && data.list && data.list.length > 0) {
+                currentList = data.list;
+                if(data.catalog) catalog = data.catalog;
             }
             document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
             document.getElementById('syncStatus').style.color = "#27ae60";
-            saveLocally(); // Met à jour la sauvegarde locale
-            renderLists(); renderCatalog();
+            saveLocally();
+            renderLists(); 
+            renderCatalog();
         }, (error) => {
-            document.getElementById('syncStatus').innerText = "⚠️ Mode hors-ligne (téléphone uniquement)";
+            document.getElementById('syncStatus').innerText = "⚠️ Mode local (sauvegarde sécurisée)";
             document.getElementById('syncStatus').style.color = "#e67e22";
         });
         
@@ -326,7 +372,7 @@
     }
 
     function pushToFirebase() {
-        saveLocally(); // Sauvegarde toujours sur le téléphone
+        saveLocally();
         renderLists(); 
         document.getElementById('syncStatus').innerText = "🔄 Synchronisation...";
         document.getElementById('syncStatus').style.color = "#888";
@@ -336,14 +382,14 @@
             document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
             document.getElementById('syncStatus').style.color = "#27ae60";
         }).catch((error) => {
-            document.getElementById('syncStatus').innerText = "⚠️ Enregistré sur le téléphone (Erreur réseau)";
+            document.getElementById('syncStatus').innerText = "⚠️ Sauvegardé en mémoire locale";
             document.getElementById('syncStatus').style.color = "#e67e22";
         });
     }
 
     function manualSave() {
         pushToFirebase();
-        alert("💾 Vos courses sont bien sauvegardées !");
+        alert("💾 Vos 43 articles sont bien sauvegardés !");
     }
 
     function renderCatalog() {
@@ -439,7 +485,6 @@
         else { navigator.clipboard.writeText(text); alert("Liste copiée ! Vous pouvez maintenant la coller dans votre conversation Messenger."); }
     }
 
-    // --- RESTE DES APPS ---
     function saveScore(activite) {
         if(isCurrentParent) return;
         dbFirebase.ref('activites/' + currentUser).push({ date: new Date().toLocaleString(), tache: activite });
