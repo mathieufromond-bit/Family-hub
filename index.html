@@ -3,95 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Appli Familiale Complète</title>
+    <title>Espace Familial Tribu</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
         :root {
-            --bg: #f4f7f6; --primary: #2c3e50; --accent: #3498db;
-            --parent-color: #e3000f; --kids-color: #27ae60;
+            --bg-canvas: #f8fafc;
+            --surface: #ffffff;
+            --primary: #1e293b;
+            --accent: #2563eb;
+            --parent-accent: #e11d48;
+            --kid-accent: #059669;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
+            --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-full: 9999px;
             --messenger: #0084ff;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 800px; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
-        
-        .header { background-color: var(--primary); color: white; padding: 15px; text-align: center; font-size: 1.2em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        .header button { background: none; border: 1px solid white; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; display: none; }
 
-        #login-screen { padding: 40px 20px; text-align: center; }
-        .profiles { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
-        .profile-card { width: 120px; padding: 20px; border-radius: 15px; background: #fff; border: 2px solid #eee; cursor: pointer; transition: 0.3s; }
-        .profile-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .profile-card.parent { border-color: var(--parent-color); }
-        .profile-card.kid { border-color: var(--kids-color); }
-        .avatar { font-size: 3em; margin-bottom: 10px; }
-
-        #pin-screen { display: none; text-align: center; padding: 40px 20px; }
-        .pin-input { font-size: 2em; letter-spacing: 10px; margin: 20px 0; border: none; border-bottom: 2px solid var(--primary); width: 150px; text-align: center; outline: none; }
-        
-        #dashboard-screen { display: none; padding: 20px; }
-        .welcome-text { font-size: 1.5em; margin-bottom: 20px; color: var(--primary); }
-        .widget-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .widget { padding: 15px; border-radius: 15px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 120px; transition: transform 0.2s; border: none; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .widget:active { transform: scale(0.95); }
-        .widget .icon { font-size: 2.2em; margin-bottom: 8px; }
-        
-        .bg-courses { background: linear-gradient(135deg, #e3000f, #ff4757); }
-        .bg-school { background: linear-gradient(135deg, #e67e22, #f39c12); }
-        .bg-lang { background: linear-gradient(135deg, #3498db, #2980b9); }
-        .bg-games { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-        .bg-print { background: linear-gradient(135deg, #7f8c8d, #95a5a6); }
-
-        .app-view { display: none; padding: 20px; }
-
-        /* Animations & Retours */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-8px); }
-            40%, 80% { transform: translateX(8px); }
+        * { box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-canvas); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+            -webkit-font-smoothing: antialiased;
         }
-        @keyframes pop {
-            0% { transform: scale(0.8); opacity: 0; }
-            70% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
+
+        .container { 
+            width: 100%; 
+            max-width: 840px; 
+            background: var(--surface); 
+            min-height: 100vh; 
+            position: relative; 
+            box-shadow: 0 0 40px rgba(0,0,0,0.03); 
         }
-        .shake { animation: shake 0.4s ease-in-out; }
-        .pop { animation: pop 0.3s ease-out; }
 
-        .exercise-item { background: #fdfdfd; border-left: 4px solid #e67e22; padding: 12px; margin-bottom: 12px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .exercise-item input { padding: 8px; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; width: 120px; margin-left: 10px; }
-        .exercise-item.correct { border-left-color: #27ae60; background: #eafaf1; }
-        .exercise-item.wrong { border-left-color: #e74c3c; background: #fdf2e9; }
+        /* En-tête */
+        .app-header { 
+            background: #ffffff; 
+            border-bottom: 1px solid var(--border-light);
+            padding: 16px 24px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-title-box { display: flex; align-items: center; gap: 10px; }
+        .header-title { font-size: 1.15em; font-weight: 700; color: var(--primary); letter-spacing: -0.02em; }
+        .nav-btn { 
+            background: #f1f5f9; 
+            border: 1px solid #cbd5e1; 
+            color: var(--text-main); 
+            padding: 7px 14px; 
+            border-radius: var(--radius-full); 
+            font-size: 0.85em; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: none; 
+            transition: all 0.2s ease;
+        }
+        .nav-btn:hover { background: #e2e8f0; }
 
-        /* Grilles & Jeux */
-        .sudoku-board { display: grid; grid-template-columns: repeat(4, 45px); gap: 4px; justify-content: center; margin: 20px auto; }
-        .sudoku-cell { width: 45px; height: 45px; text-align: center; font-size: 1.2em; font-weight: bold; border: 2px solid #34495e; border-radius: 4px; }
-        .sudoku-cell:disabled { background: #ecf0f1; color: #2c3e50; }
+        /* ÉCRAN DE CONNEXION / SÉLECTION PROFIL */
+        #login-screen { 
+            padding: 60px 24px 40px; 
+            text-align: center; 
+        }
+        .login-hero-title { 
+            font-size: 1.8em; 
+            font-weight: 800; 
+            letter-spacing: -0.03em; 
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        .login-hero-sub { 
+            font-size: 0.95em; 
+            color: var(--text-muted); 
+            margin-bottom: 40px; 
+        }
+        .profiles-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+            max-width: 480px; 
+            margin: 0 auto; 
+        }
+        @media (min-width: 540px) {
+            .profiles-grid { grid-template-columns: repeat(4, 1fr); }
+        }
 
-        .cw-grid { display: grid; grid-template-columns: repeat(5, 40px); gap: 4px; justify-content: center; margin: 15px auto; }
-        .cw-cell { width: 40px; height: 40px; text-align: center; font-size: 1.2em; font-weight: bold; border: 1px solid #7f8c8d; text-transform: uppercase; }
-        .cw-black { background: #2c3e50; border: none; }
+        .profile-card { 
+            background: #ffffff; 
+            border: 1px solid var(--border-light); 
+            border-radius: var(--radius-lg); 
+            padding: 24px 14px; 
+            cursor: pointer; 
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: var(--shadow-subtle);
+        }
+        .profile-card:hover { 
+            transform: translateY(-4px); 
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-elevated); 
+        }
+        .avatar-circle { 
+            width: 72px; 
+            height: 72px; 
+            border-radius: var(--radius-full); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2.2em; 
+            margin-bottom: 12px;
+            background: #f8fafc;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .profile-card.parent .avatar-circle { background: #fff1f2; border-color: #fecdd3; }
+        .profile-card.kid .avatar-circle { background: #ecfdf5; border-color: #a7f3d0; }
+        .profile-name { font-size: 1.05em; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+        .profile-role-tag { font-size: 0.72em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: var(--radius-full); }
+        .profile-card.parent .profile-role-tag { background: #ffe4e6; color: #be123c; }
+        .profile-card.kid .profile-role-tag { background: #d1fae5; color: #047857; }
 
-        /* Échecs */
-        .chessboard { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; max-width: 320px; margin: 10px auto; border: 2px solid #333; }
+        /* ÉCRAN CODE PIN */
+        #pin-screen { display: none; text-align: center; padding: 40px 20px; max-width: 320px; margin: 0 auto; }
+        .pin-dots { display: flex; justify-content: center; gap: 14px; margin: 25px 0 35px; }
+        .pin-dot { width: 14px; height: 14px; border-radius: var(--radius-full); background: #e2e8f0; transition: all 0.2s ease; }
+        .pin-dot.filled { background: var(--primary); transform: scale(1.15); }
+        .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; justify-content: center; }
+        .key-btn { 
+            width: 70px; height: 70px; margin: 0 auto; 
+            background: #ffffff; border: 1px solid var(--border-light); 
+            border-radius: var(--radius-full); font-size: 1.5em; font-weight: 600; color: var(--primary);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-subtle); transition: all 0.15s ease;
+        }
+        .key-btn:active { background: #f1f5f9; transform: scale(0.92); }
+
+        /* PARAMÈTRES MOT DE PASSE (MODAL) */
+        #settings-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 200;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .settings-card {
+            background: #ffffff; border-radius: var(--radius-lg); padding: 28px; width: 100%; max-width: 380px;
+            box-shadow: var(--shadow-elevated);
+        }
+
+        /* TABLEAU DE BORD */
+        #dashboard-screen { display: none; padding: 24px; }
+        .dashboard-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .dashboard-user-greeting { font-size: 1.4em; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; }
+        .widget-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+        .widget-card { 
+            padding: 20px 16px; border-radius: var(--radius-lg); color: white; cursor: pointer; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; 
+            min-height: 130px; border: none; font-weight: 700; box-shadow: var(--shadow-card);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .widget-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-elevated); }
+        .widget-card:active { transform: scale(0.97); }
+        .widget-icon { font-size: 2.2em; margin-bottom: 8px; }
+
+        .bg-courses { background: linear-gradient(135deg, #e11d48, #f43f5e); }
+        .bg-school { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        .bg-lang { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+        .bg-games { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+        .bg-print { background: linear-gradient(135deg, #475569, #64748b); }
+
+        .app-view { display: none; padding: 24px; }
+
+        /* UI COURSES */
+        .drive-links { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+        .drive-links a { 
+            flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; 
+            color: white; font-weight: 700; font-size: 0.88em; min-width: 100px; 
+        }
+        .link-colruyt { background-color: #ea580c; }
+        .link-intermarche { background-color: #1e293b; }
+        .link-delhaize { background-color: #dc2626; }
+
+        .controls { display: flex; gap: 8px; margin-bottom: 18px; }
+        .controls input[type="text"] { flex: 3; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 15px; margin: 0; outline: none; }
+        .controls input[type="number"] { width: 70px; padding: 12px 8px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 15px; text-align: center; margin: 0; outline: none; }
+        .btn-add { background-color: var(--accent); border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 15px; color: white; font-weight: 700; }
+        
+        .item-row { 
+            display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; 
+            background: white; margin-bottom: 6px; border-radius: 8px; border: 1px solid #f1f5f9; box-shadow: var(--shadow-subtle); 
+        }
+        .item-row.checked { text-decoration: line-through; opacity: 0.5; background: #f8fafc; }
+        .item-actions { display: flex; align-items: center; gap: 6px; }
+        .item-row button { padding: 6px 12px; font-size: 13px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: 700; }
+        .qty-inline { width: 44px; padding: 5px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-size: 14px; }
+        
+        .check-btn { background-color: #0d9488; }
+        .remove-btn { background-color: #ef4444; }
+        .add-catalog-btn { background-color: var(--kid-accent); color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 14px; }
+
+        .catalog-cat-card { background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px; }
+        .catalog-cat-title { font-weight: 700; font-size: 0.98em; color: var(--primary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
+
+        /* UI Exercices & Jeux */
+        .exercise-item { background: #ffffff; border: 1px solid var(--border-light); border-left: 4px solid var(--school); padding: 14px; margin-bottom: 10px; border-radius: 8px; }
+        .exercise-item input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; width: 130px; margin-left: 10px; outline: none; }
+        .exercise-item.correct { border-left-color: #10b981; background: #ecfdf5; }
+        .exercise-item.wrong { border-left-color: #ef4444; background: #fef2f2; }
+
+        .btn-action { background-color: var(--kid-accent); color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 700; width: 100%; margin-top: 10px; }
+        .btn-secondary { background-color: var(--accent); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 6px; width: 100%; }
+        select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-light); box-sizing: border-box; margin-bottom: 12px; outline: none; background: white; font-size: 0.95em; }
+
+        /* Sudoku, Mots Croisés, Échecs */
+        .sudoku-board { display: grid; grid-template-columns: repeat(4, 48px); gap: 4px; justify-content: center; margin: 20px auto; }
+        .sudoku-cell { width: 48px; height: 48px; text-align: center; font-size: 1.25em; font-weight: 700; border: 2px solid #334155; border-radius: 6px; }
+        .sudoku-cell:disabled { background: #f1f5f9; color: #475569; }
+        .cw-grid { display: grid; grid-template-columns: repeat(5, 42px); gap: 4px; justify-content: center; margin: 15px auto; }
+        .cw-cell { width: 42px; height: 42px; text-align: center; font-size: 1.2em; font-weight: 700; border: 1px solid #94a3b8; border-radius: 4px; text-transform: uppercase; }
+        .cw-black { background: #1e293b; border: none; }
+        .chessboard { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; max-width: 320px; margin: 10px auto; border: 2px solid #1e293b; border-radius: 4px; overflow: hidden; }
         .square { aspect-ratio: 1; display: flex; justify-content: center; align-items: center; font-size: 0.85em; cursor: pointer; }
-        .white { background-color: #f0d9b5; } .black { background-color: #b58863; color: white; }
-
-        /* Styles UI génériques */
-        .btn-action { background-color: #27ae60; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; width: 100%; margin-top: 10px; }
-        .btn-secondary { background-color: #2980b9; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 5px; width: 100%; }
-        select, input[type="text"] { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; margin-bottom: 10px; }
-
-        /* Courses */
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: white; margin-bottom: 5px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .item.checked { text-decoration: line-through; opacity: 0.6; }
-        .qty-inline { width: 45px; padding: 4px; text-align: center; }
+        .white { background-color: #f1f5f9; } .black { background-color: #94a3b8; color: white; }
 
         @media print {
             body { background: white; }
             .container { box-shadow: none; max-width: 100%; }
-            .header, #dashboard-screen, .app-view, .no-print { display: none !important; }
+            .app-header, #dashboard-screen, .app-view, .no-print { display: none !important; }
             #app-print-view { display: block !important; padding: 0; }
             .print-entry { page-break-inside: avoid; border-bottom: 1px dashed #aaa; padding-bottom: 15px; margin-bottom: 20px; }
         }
@@ -100,41 +254,137 @@
 <body>
 
 <div class="container">
-    <div class="header">
-        <button id="logoutBtn" onclick="logout()">Déconnexion</button>
-        <span id="headerTitle">Tribu</span>
-        <button id="backBtn" onclick="showDashboard()">Retour</button>
-    </div>
+    <header class="app-header">
+        <div class="header-title-box">
+            <span class="header-title" id="headerTitle">Espace Familial</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <button id="changePinBtn" class="nav-btn" onclick="openPinModal()">⚙️ Code PIN</button>
+            <button id="logoutBtn" class="nav-btn" onclick="logout()">Déconnexion</button>
+            <button id="backBtn" class="nav-btn" onclick="showDashboard()">← Retour</button>
+        </div>
+    </header>
 
-    <!-- 1. Écran de profil -->
-    <div id="login-screen">
-        <h2>Qui est là ?</h2>
-        <div class="profiles">
-            <div class="profile-card parent" onclick="selectUser('Maman', true)"><div class="avatar">👩</div><h3>Maman</h3></div>
-            <div class="profile-card parent" onclick="selectUser('Papa', true)"><div class="avatar">👨</div><h3>Papa</h3></div>
-            <div class="profile-card kid" onclick="selectUser('Elina', false)"><div class="avatar">👧</div><h3>Elina</h3></div>
-            <div class="profile-card kid" onclick="selectUser('Amanda', false)"><div class="avatar">👧🏼</div><h3>Amanda</h3></div>
+    <!-- 1. ÉCRAN SÉLECTION DU PROFIL (Refonte Pro) -->
+    <section id="login-screen">
+        <h1 class="login-hero-title">Bienvenue</h1>
+        <p class="login-hero-sub">Choisissez un profil pour continuer</p>
+        
+        <div class="profiles-grid">
+            <div class="profile-card parent" onclick="selectUser('Maman', true)">
+                <div class="avatar-circle">👩</div>
+                <div class="profile-name">Maman</div>
+                <span class="profile-role-tag">Parent</span>
+            </div>
+            <div class="profile-card parent" onclick="selectUser('Papa', true)">
+                <div class="avatar-circle">👨</div>
+                <div class="profile-name">Papa</div>
+                <span class="profile-role-tag">Parent</span>
+            </div>
+            <div class="profile-card kid" onclick="selectUser('Elina', false)">
+                <div class="avatar-circle">👧</div>
+                <div class="profile-name">Elina</div>
+                <span class="profile-role-tag">Enfant</span>
+            </div>
+            <div class="profile-card kid" onclick="selectUser('Amanda', false)">
+                <div class="avatar-circle">👧🏼</div>
+                <div class="profile-name">Amanda</div>
+                <span class="profile-role-tag">Enfant</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. CLAVIER VIRTUEL PIN PARENT -->
+    <section id="pin-screen">
+        <h2 id="pinTitle" style="font-size:1.3em; margin-bottom:6px;">Accès Parent</h2>
+        <p style="color:var(--text-muted); font-size:0.88em; margin:0;">Entrez votre code à 4 chiffres</p>
+        
+        <div class="pin-dots">
+            <div class="pin-dot" id="dot-0"></div>
+            <div class="pin-dot" id="dot-1"></div>
+            <div class="pin-dot" id="dot-2"></div>
+            <div class="pin-dot" id="dot-3"></div>
+        </div>
+
+        <div class="keypad-grid">
+            <button class="key-btn" onclick="pressPin('1')">1</button>
+            <button class="key-btn" onclick="pressPin('2')">2</button>
+            <button class="key-btn" onclick="pressPin('3')">3</button>
+            <button class="key-btn" onclick="pressPin('4')">4</button>
+            <button class="key-btn" onclick="pressPin('5')">5</button>
+            <button class="key-btn" onclick="pressPin('6')">6</button>
+            <button class="key-btn" onclick="pressPin('7')">7</button>
+            <button class="key-btn" onclick="pressPin('8')">8</button>
+            <button class="key-btn" onclick="pressPin('9')">9</button>
+            <button class="key-btn" style="font-size:0.9em;" onclick="logout()">Annul.</button>
+            <button class="key-btn" onclick="pressPin('0')">0</button>
+            <button class="key-btn" style="font-size:1.1em;" onclick="clearPin()">⌫</button>
+        </div>
+        <p id="pinError" style="color:#ef4444; font-weight:600; font-size:0.85em; margin-top:18px; display:none;">Code incorrect</p>
+    </section>
+
+    <!-- 3. MODAL MODIFICATION DU CODE PIN -->
+    <div id="settings-modal">
+        <div class="settings-card">
+            <h3 style="margin-top:0; color:var(--primary);">Modifier le code PIN</h3>
+            <p style="color:var(--text-muted); font-size:0.85em;">Ce code est partagé entre Maman et Papa pour accéder à la gestion complète.</p>
+            
+            <label style="font-size:0.85em; font-weight:600; display:block; margin-bottom:4px;">Ancien code</label>
+            <input type="password" id="oldPinInput" maxlength="4" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:12px; font-size:16px;">
+
+            <label style="font-size:0.85em; font-weight:600; display:block; margin-bottom:4px;">Nouveau code (4 chiffres)</label>
+            <input type="password" id="newPinInput" maxlength="4" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:18px; font-size:16px;">
+
+            <div style="display:flex; gap:8px;">
+                <button class="btn-action" style="margin:0;" onclick="saveNewPin()">Valider</button>
+                <button class="btn-secondary" style="margin:0; background:#94a3b8;" onclick="closePinModal()">Annuler</button>
+            </div>
+            <p id="pinChangeFeedback" style="font-size:0.85em; font-weight:600; margin-top:10px; text-align:center;"></p>
         </div>
     </div>
 
-    <!-- 2. PIN Parents -->
-    <div id="pin-screen">
-        <h2 id="pinTitle">Code secret</h2>
-        <input type="password" id="pinInput" class="pin-input" maxlength="4" onkeyup="checkPin()">
-        <p style="color:red; display:none;" id="pinError">Code incorrect</p>
-        <button onclick="logout()" class="btn-secondary" style="background:#7f8c8d; width:120px;">Annuler</button>
-    </div>
-
-    <!-- 3. Dashboard -->
-    <div id="dashboard-screen">
-        <div class="welcome-text">Bonjour <span id="userNameDisplay"></span> !</div>
+    <!-- 4. TABLEAU DE BORD DYNAMIQUE -->
+    <main id="dashboard-screen">
+        <div class="dashboard-header-row">
+            <div class="dashboard-user-greeting">Bonjour <span id="userNameDisplay"></span></div>
+        </div>
         <div class="widget-grid" id="widgetGrid"></div>
-    </div>
+    </main>
 
-    <!-- 4. APP EXERCICES SCOLAIRES P1 À P6 -->
-    <div id="app-school" class="app-view">
+    <!-- 5. APP COURSES (Liste unique + Catégories) -->
+    <section id="app-courses" class="app-view">
+        <div class="drive-links">
+            <a href="https://www.collectandgo.be/" target="_blank" class="link-colruyt">Collect&Go</a>
+            <a href="https://www.intermarche.be/" target="_blank" class="link-intermarche">Intermarché</a>
+            <a href="https://www.delhaize.be/" target="_blank" class="link-delhaize">Delhaize</a>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="newItemInput" placeholder="Ajouter un article...">
+            <input type="number" id="newItemQty" value="1" min="1">
+            <button class="btn-add" onclick="addCustomItem()">Ajouter</button>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid var(--border-light); padding:16px; border-radius:var(--radius-md); margin-bottom:16px;">
+            <h3 style="color:var(--primary); margin:0 0 12px 0; font-size:1.1em;">Articles en attente (<span id="countCourses">0</span>)</h3>
+            <div id="unifiedListContainer"></div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+            <button onclick="shareList()" style="background-color:var(--messenger); flex:1; min-width:130px; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:700;">💬 Partager</button>
+            <button onclick="pushToFirebase()" style="background-color:var(--kid-accent); flex:1; min-width:130px; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:700;">💾 Sauvegarder</button>
+            <button onclick="clearCourses()" style="background-color:#64748b; flex:1; min-width:90px; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:700;">Vider</button>
+        </div>
+        <div id="syncStatus" style="font-size:12px; font-weight:600; color:#94a3b8; text-align:center; margin-bottom:24px;">Synchronisation...</div>
+
+        <h3 style="margin-bottom:14px;">Rayons d'ajout rapide</h3>
+        <div id="categorizedCatalog"></div>
+    </section>
+
+    <!-- 6. APP EXERCICES P1 À P6 -->
+    <section id="app-school" class="app-view">
         <div class="no-print">
-            <label><strong>1. Niveau scolaire :</strong></label>
+            <label style="font-weight:600; font-size:0.88em;">Niveau :</label>
             <select id="gradeSelect">
                 <option value="P1">1ère Primaire (P1)</option>
                 <option value="P2">2ème Primaire (P2)</option>
@@ -143,143 +393,93 @@
                 <option value="P5">5ème Primaire (P5)</option>
                 <option value="P6">6ème Primaire (P6)</option>
             </select>
-
-            <label><strong>2. Matière :</strong></label>
+            <label style="font-weight:600; font-size:0.88em;">Matière :</label>
             <select id="subjectSelect">
-                <option value="math">🧮 Mathématiques (Interactif)</option>
-                <option value="fr">📖 Français & Grammaire</option>
-                <option value="dictee">✍️ Dictée / Orthographe</option>
-                <option value="lecture">👁 Lecture & Compréhension</option>
-                <option value="cg">🌍 Éveil & Culture Générale</option>
+                <option value="math">Mathématiques</option>
+                <option value="fr">Français & Grammaire</option>
+                <option value="dictee">Dictée / Mots</option>
+                <option value="lecture">Lecture & Compréhension</option>
+                <option value="cg">Éveil & Culture Générale</option>
             </select>
-
-            <label><strong>3. Difficulté :</strong></label>
+            <label style="font-weight:600; font-size:0.88em;">Difficulté :</label>
             <select id="diffSelect">
                 <option value="1">🟢 Facile</option>
                 <option value="2">🟡 Moyen</option>
                 <option value="3">🔴 Défi</option>
             </select>
-
-            <button class="btn-action" onclick="generateSchoolExercises()">🚀 Générer les exercices</button>
+            <button class="btn-action" onclick="generateSchoolExercises()">Générer les exercices</button>
         </div>
-
-        <div id="schoolOutput" style="margin-top: 15px;"></div>
-
-        <div id="schoolInteractiveActions" style="display:none; margin-top:15px;">
-            <button class="btn-action" onclick="verifySchoolAnswers()">✨ Valider mes réponses</button>
-            <button class="btn-secondary" onclick="addExerciseToPrint()">➕ Ajouter à la feuille d'impression</button>
+        <div id="schoolOutput" style="margin-top:18px;"></div>
+        <div id="schoolInteractiveActions" style="display:none; margin-top:16px;">
+            <button class="btn-action" onclick="verifySchoolAnswers()">Valider mes réponses</button>
+            <button class="btn-secondary" onclick="addExerciseToPrint()">Ajouter à la feuille d'impression</button>
         </div>
-        <div id="schoolFeedback" style="text-align:center; font-weight:bold; font-size:1.2em; margin-top:10px;"></div>
-    </div>
+        <div id="schoolFeedback" style="text-align:center; font-weight:700; font-size:1.1em; margin-top:12px;"></div>
+    </section>
 
-    <!-- 5. APP JEUX & RÉFLEXION -->
-    <div id="app-games" class="app-view">
+    <!-- 7. APP JEUX -->
+    <section id="app-games" class="app-view">
         <select id="gameSubSelect" onchange="switchGameSubView()">
-            <option value="sudoku">🔢 Sudoku 4x4 & 6x6</option>
-            <option value="crosswords">📝 Mots Fléchés / Croisés</option>
-            <option value="chess">♟️ Échecs : Coordonnées & Cases</option>
+            <option value="sudoku">Sudoku</option>
+            <option value="crosswords">Mots Croisés</option>
+            <option value="chess">Échecs : Coordonnées</option>
         </select>
-
-        <!-- Sudoku -->
         <div id="sub-sudoku">
-            <p style="text-align:center;">Complète chaque case avec un chiffre sans répétition.</p>
+            <p style="text-align:center; color:var(--text-muted);">Complète la grille avec les chiffres 1 à 4 sans répétition.</p>
             <div id="sudokuGridContainer"></div>
-            <button class="btn-action" onclick="checkSudoku()">Vérifier le Sudoku</button>
-            <button class="btn-secondary" onclick="initSudoku()">Nouveau Sudoku</button>
-            <div id="sudokuFeedback" style="text-align:center; font-weight:bold; margin-top:10px;"></div>
+            <button class="btn-action" onclick="checkSudoku()">Vérifier</button>
+            <button class="btn-secondary" onclick="initSudoku()">Nouvelle grille</button>
+            <div id="sudokuFeedback" style="text-align:center; font-weight:700; margin-top:10px;"></div>
         </div>
-
-        <!-- Mots croisés -->
         <div id="sub-crosswords" style="display:none;">
-            <p><strong>Indices :</strong></p>
-            <ol id="cwClues">
-                <li>1. Animal domestique qui miaule (4 lettres)</li>
-                <li>2. Étoile du jour (6 lettres)</li>
-            </ol>
+            <p style="font-size:0.9em; color:var(--text-muted);">1. Animal qui miaule (4 lettres) | 2. Astre du jour (6 lettres)</p>
             <div id="cwContainer"></div>
-            <button class="btn-action" onclick="checkCrossword()">Vérifier les mots</button>
-            <div id="cwFeedback" style="text-align:center; font-weight:bold; margin-top:10px;"></div>
+            <button class="btn-action" onclick="checkCrossword()">Vérifier les lettres</button>
+            <div id="cwFeedback" style="text-align:center; font-weight:700; margin-top:10px;"></div>
         </div>
-
-        <!-- Échecs -->
         <div id="sub-chess" style="display:none;">
-            <p style="text-align:center; font-weight:bold;">Trouve la case : <span id="targetSquare" style="color:#8e44ad; font-size:1.4em;">--</span></p>
+            <p style="text-align:center; font-weight:700;">Trouve la case : <span id="targetSquare" style="color:var(--accent); font-size:1.3em;">--</span></p>
             <div class="chessboard" id="board"></div>
-            <p id="chessFeedback" style="text-align:center; font-weight:bold; height:20px;"></p>
-            <button class="btn-secondary" onclick="nextChessTarget()">Nouvelle case</button>
+            <p id="chessFeedback" style="text-align:center; font-weight:700; height:20px;"></p>
+            <button class="btn-secondary" onclick="nextChessTarget()">Autre case</button>
         </div>
-    </div>
+    </section>
 
-    <!-- 6. APP LANGUES -->
-    <div id="app-lang" class="app-view">
-        <h3>🇳🇱 Flashcards Néerlandais</h3>
+    <!-- 8. APP LANGUES -->
+    <section id="app-lang" class="app-view">
+        <h3 style="margin-top:0;">Néerlandais (Flashcards)</h3>
         <select id="nlCategory" onchange="nextNlWord()">
             <option value="colors">Couleurs</option>
             <option value="animals">Animaux</option>
             <option value="numbers">Nombres</option>
         </select>
-        <div id="nlCard" style="background:#f39c12; color:white; height:120px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.8em; font-weight:bold; cursor:pointer;" onclick="flipNlCard()">Cliquez</div>
-        <button class="btn-action" onclick="nextNlWord()">Mot suivant ➔</button>
+        <div id="nlCard" style="background:#f59e0b; color:white; height:120px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:1.6em; font-weight:700; cursor:pointer;" onclick="flipNlCard()">Cliquez</div>
+        <button class="btn-action" onclick="nextNlWord()">Mot suivant →</button>
 
-        <h3 style="margin-top:25px;">🇬🇧 Défi Anglais</h3>
-        <p id="engPrompt">Traduisez en anglais : "Le chat noir"</p>
-        <input type="text" id="engInput" placeholder="Écrivez ici...">
-        <button class="btn-secondary" onclick="verifyEnglish()">Vérifier</button>
-        <div id="engFeedback" style="font-weight:bold; margin-top:5px;"></div>
-    </div>
+        <h3 style="margin-top:32px;">Anglais</h3>
+        <p style="font-size:0.92em; color:var(--text-muted);">Traduisez : "Le chat noir"</p>
+        <input type="text" id="engInput" placeholder="Votre réponse...">
+        <button class="btn-secondary" onclick="verifyEnglish()">Valider</button>
+        <div id="engFeedback" style="font-weight:700; margin-top:8px;"></div>
+    </section>
 
-    <!-- 7. FEUILLE D'IMPRESSION -->
-    <div id="app-print-view" class="app-view">
+    <!-- 9. FEUILLE D'IMPRESSION -->
+    <section id="app-print-view" class="app-view">
         <div class="no-print">
-            <button class="btn-action" onclick="window.print()">🖨️ Imprimer la feuille</button>
-            <button class="btn-secondary" style="background:#e74c3c;" onclick="clearPrintQueue()">🗑️ Vider la sélection</button>
+            <button class="btn-action" onclick="window.print()">Imprimer la sélection</button>
+            <button class="btn-secondary" style="background:#ef4444;" onclick="clearPrintQueue()">Vider la feuille</button>
         </div>
-        <h2>Feuille d'exercices personnalisée</h2>
-        <div id="printQueueContent">Aucun exercice ajouté pour le moment.</div>
-    </div>
-
-    <!-- 8. APP COURSES (Parents) -->
-    <div id="app-courses" class="app-view">
-        <div class="drive-links" style="display:flex; gap:10px; margin-bottom:15px;">
-            <a href="https://www.collectandgo.be/" target="_blank" style="background:#e26e00; flex:1; padding:8px; color:white; text-align:center; text-decoration:none; border-radius:5px; font-weight:bold;">Collect&Go</a>
-            <a href="https://www.intermarche.be/" target="_blank" style="background:#212529; flex:1; padding:8px; color:white; text-align:center; text-decoration:none; border-radius:5px; font-weight:bold;">Intermarché</a>
-            <a href="https://www.delhaize.be/" target="_blank" style="background:#e3000f; flex:1; padding:8px; color:white; text-align:center; text-decoration:none; border-radius:5px; font-weight:bold;">Delhaize</a>
-        </div>
-        <div style="display:flex; gap:5px; margin-bottom:15px;">
-            <input type="text" id="newItemInput" placeholder="Produit..." style="margin:0; flex:2;">
-            <input type="number" id="newItemQty" value="1" min="1" style="width:60px; padding:10px; border-radius:5px; border:1px solid #ccc; text-align:center;">
-            <select id="itemType" style="margin:0; flex:1;">
-                <option value="magasin">Magasin</option>
-                <option value="drive">Drive</option>
-            </select>
-            <button class="btn-action" style="margin:0; width:auto;" onclick="addCustomItem()">➕</button>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div style="background:#f9f9f9; padding:10px; border-radius:8px;">
-                <h4 style="color:#e26e00; margin:0 0 10px 0;">📦 Drive (<span id="countDrive">0</span>)</h4>
-                <div id="listDrive"></div>
-            </div>
-            <div style="background:#f9f9f9; padding:10px; border-radius:8px;">
-                <h4 style="color:#27ae60; margin:0 0 10px 0;">🛒 Magasin (<span id="countMagasin">0</span>)</h4>
-                <div id="listMagasin"></div>
-            </div>
-        </div>
-        <div style="margin-top:15px; display:flex; gap:10px;">
-            <button class="btn-action" style="background:var(--messenger);" onclick="shareList()">💬 Partager</button>
-            <button class="btn-action" style="background:#27ae60;" onclick="pushToFirebase()">💾 Sauvegarder</button>
-            <button class="btn-action" style="background:#7f8c8d;" onclick="clearCourses()">Vider</button>
-        </div>
-        <div id="syncStatus" style="text-align:center; font-size:12px; margin-top:10px;">Synchronisé</div>
-        <h4 style="margin-top:20px;">Ajout Rapide</h4>
-        <div id="catalogContainer" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
-    </div>
+        <h2>Exercices prêts pour impression</h2>
+        <div id="printQueueContent" style="color:var(--text-muted);">Aucun exercice sélectionné.</div>
+    </section>
 </div>
 
 <script>
-    // --- 1. CONFIGURATION & NAVIGATION ---
-    const PARENT_PIN = "1234";
+    // --- GESTION DU CODE PIN ---
+    let PARENT_PIN = localStorage.getItem('tribu_parent_pin') || "1234";
     let currentUser = null;
     let isCurrentParent = false;
+    let enteredPin = "";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAcwjPfC_ObEaW9PsoWLhCmMFaMoCqSKXU",
@@ -294,20 +494,64 @@
     const dbFirebase = firebase.database();
     dbFirebase.goOnline();
 
+    // Synchronisation du PIN depuis Firebase
+    dbFirebase.ref('security/parentPin').on('value', snap => {
+        const val = snap.val();
+        if (val) {
+            PARENT_PIN = val.toString();
+            localStorage.setItem('tribu_parent_pin', PARENT_PIN);
+        }
+    });
+
     function selectUser(name, isParent) {
-        currentUser = name; isCurrentParent = isParent;
+        currentUser = name; 
+        isCurrentParent = isParent;
         document.getElementById('login-screen').style.display = 'none';
+        
         if (isParent) {
+            enteredPin = "";
+            updatePinDots();
+            document.getElementById('pinError').style.display = 'none';
             document.getElementById('pin-screen').style.display = 'block';
-            document.getElementById('pinInput').value = ""; document.getElementById('pinInput').focus();
-        } else { loginSuccess(); }
+            document.getElementById('pinTitle').innerText = "Accès " + name;
+        } else {
+            loginSuccess();
+        }
     }
 
-    function checkPin() {
-        if (document.getElementById('pinInput').value === PARENT_PIN) {
-            document.getElementById('pinError').style.display = 'none'; loginSuccess();
-        } else if (document.getElementById('pinInput').value.length === 4) {
+    function pressPin(digit) {
+        if (enteredPin.length < 4) {
+            enteredPin += digit;
+            updatePinDots();
+            if (enteredPin.length === 4) {
+                setTimeout(evaluatePin, 100);
+            }
+        }
+    }
+
+    function clearPin() {
+        if (enteredPin.length > 0) {
+            enteredPin = enteredPin.slice(0, -1);
+            updatePinDots();
+        }
+    }
+
+    function updatePinDots() {
+        for (let i = 0; i < 4; i++) {
+            const dot = document.getElementById(`dot-${i}`);
+            if (i < enteredPin.length) dot.classList.add('filled');
+            else dot.classList.remove('filled');
+        }
+    }
+
+    function evaluatePin() {
+        if (enteredPin === PARENT_PIN) {
+            document.getElementById('pinError').style.display = 'none';
+            loginSuccess();
+        } else {
             document.getElementById('pinError').style.display = 'block';
+            enteredPin = "";
+            updatePinDots();
         }
     }
 
@@ -315,30 +559,89 @@
         document.getElementById('pin-screen').style.display = 'none';
         document.getElementById('dashboard-screen').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'block';
+        document.getElementById('changePinBtn').style.display = isCurrentParent ? 'block' : 'none';
         document.getElementById('userNameDisplay').innerText = currentUser;
         buildDashboard();
         if (isCurrentParent) initCourses();
     }
 
     function logout() {
+        currentUser = null;
+        enteredPin = "";
         document.getElementById('login-screen').style.display = 'block';
         document.getElementById('pin-screen').style.display = 'none';
         document.getElementById('dashboard-screen').style.display = 'none';
         document.querySelectorAll('.app-view').forEach(el => el.style.display = 'none');
         document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('changePinBtn').style.display = 'none';
         document.getElementById('backBtn').style.display = 'none';
+        document.getElementById('headerTitle').innerText = "Espace Familial";
+    }
+
+    // Modal PIN
+    function openPinModal() {
+        document.getElementById('oldPinInput').value = "";
+        document.getElementById('newPinInput').value = "";
+        document.getElementById('pinChangeFeedback').innerText = "";
+        document.getElementById('settings-modal').style.display = 'flex';
+    }
+
+    function closePinModal() {
+        document.getElementById('settings-modal').style.display = 'none';
+    }
+
+    function saveNewPin() {
+        const oldP = document.getElementById('oldPinInput').value;
+        const newP = document.getElementById('newPinInput').value;
+        const fb = document.getElementById('pinChangeFeedback');
+
+        if (oldP !== PARENT_PIN) {
+            fb.innerText = "❌ L'ancien code est incorrect.";
+            fb.style.color = "#ef4444";
+            return;
+        }
+        if (!/^\d{4}$/.test(newP)) {
+            fb.innerText = "❌ Le nouveau code doit faire exactement 4 chiffres.";
+            fb.style.color = "#ef4444";
+            return;
+        }
+
+        PARENT_PIN = newP;
+        localStorage.setItem('tribu_parent_pin', newP);
+        dbFirebase.ref('security/parentPin').set(newP);
+        
+        fb.innerText = "✅ Code PIN modifié avec succès !";
+        fb.style.color = "#10b981";
+        setTimeout(closePinModal, 1200);
     }
 
     function buildDashboard() {
         const grid = document.getElementById('widgetGrid');
         grid.innerHTML = `
-            <button class="widget bg-school" onclick="openApp('app-school', '📚 Exercices P1-P6')"><div class="icon">📝</div><div>Exercices<br><small>P1 à P6</small></div></button>
-            <button class="widget bg-games" onclick="openApp('app-games', '🎮 Jeux & Échecs')"><div class="icon">♟️</div><div>Jeux<br><small>Sudoku, Échecs</small></div></button>
-            <button class="widget bg-lang" onclick="openApp('app-lang', '🌍 Langues')"><div class="icon">🇬🇧🇳🇱</div><div>Langues<br><small>NL / EN</small></div></button>
-            <button class="widget bg-print" onclick="openApp('app-print-view', '🖨️ Impression')"><div class="icon">🖨️</div><div>Impression<br><small id=\"printCountLbl\">(0)</small></div></button>
+            <div class="widget-card bg-school" onclick="openApp('app-school', 'Exercices P1-P6')">
+                <div class="widget-icon">📝</div>
+                <div>Exercices<br><small style="opacity:0.85;">P1 à P6</small></div>
+            </div>
+            <div class="widget-card bg-games" onclick="openApp('app-games', 'Jeux & Échecs')">
+                <div class="widget-icon">♟️</div>
+                <div>Jeux<br><small style="opacity:0.85;">Sudoku, Échecs</small></div>
+            </div>
+            <div class="widget-card bg-lang" onclick="openApp('app-lang', 'Langues')">
+                <div class="widget-icon">🌍</div>
+                <div>Langues<br><small style="opacity:0.85;">NL / EN</small></div>
+            </div>
+            <div class="widget-card bg-print" onclick="openApp('app-print-view', 'Impression')">
+                <div class="widget-icon">🖨️</div>
+                <div>Impression<br><small id=\"printCountLbl\" style="opacity:0.85;">(0)</small></div>
+            </div>
         `;
         if (isCurrentParent) {
-            grid.innerHTML = `<button class="widget bg-courses" onclick="openApp('app-courses', '🛒 Courses & Stock')"><div class="icon">🛒</div><div>Courses</div></button>` + grid.innerHTML;
+            grid.innerHTML = `
+                <div class="widget-card bg-courses" onclick="openApp('app-courses', 'Courses & Stock')">
+                    <div class="widget-icon">🛒</div>
+                    <div>Courses<br><small style="opacity:0.85;">Tribu</small></div>
+                </div>
+            ` + grid.innerHTML;
         }
     }
 
@@ -354,67 +657,235 @@
     function showDashboard() {
         document.getElementById('dashboard-screen').style.display = 'block';
         document.querySelectorAll('.app-view').forEach(el => el.style.display = 'none');
-        document.getElementById('headerTitle').innerText = "Tribu";
+        document.getElementById('headerTitle').innerText = "Espace Familial";
         document.getElementById('backBtn').style.display = 'none';
     }
 
-    // --- 2. AUDIO & ANIMATIONS (Sons sans fichier externe) ---
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(type) {
-        try {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if (type === 'success') {
-                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            } else {
-                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(150, audioCtx.currentTime + 0.15);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    // --- COURSES UNIFIÉES & CATALOGUE COMPLET ---
+    const initialActiveList = [
+        { id: 1, name: "Pellets (Chauffage)", quantity: 6, checked: false },
+        { id: 2, name: "Barres céréales", quantity: 1, checked: false },
+        { id: 3, name: "Courgettes", quantity: 2, checked: false },
+        { id: 4, name: "Frites congelée", quantity: 1, checked: false },
+        { id: 5, name: "Lessive blanc", quantity: 1, checked: false },
+        { id: 6, name: "Mozza", quantity: 1, checked: false },
+        { id: 7, name: "Pommes", quantity: 1, checked: false },
+        { id: 8, name: "Pain tranches", quantity: 3, checked: false },
+        { id: 9, name: "Tomates pelées", quantity: 3, checked: false },
+        { id: 10, name: "Collations", quantity: 1, checked: false },
+        { id: 11, name: "Petits sacs poubelles", quantity: 1, checked: false },
+        { id: 12, name: "Andalouse", quantity: 1, checked: false },
+        { id: 13, name: "Biscuit patient", quantity: 1, checked: false }
+    ];
+
+    const categorizedCatalogData = {
+        "🥤 Boissons": [
+            "Eau", "SPA Reine Eau", "Eau Minérale / Gazeuse", "Grd Perrier", "Petit perrier",
+            "Pepsi", "Pepsi x3", "Cannettes", "Cecemel", "Sojas normal", "Boisson de Soja Vanille", "Vin"
+        ],
+        "🍎 Fruits & Légumes": [
+            "Bananes", "Pommes", "Salade", "Tomates", "Tomates Snack", "Tomates pelées", "Courgettes", "Concombres", "Pdt"
+        ],
+        "🥐 Boulangerie & Céréales": [
+            "Pain / Baguette", "Pain tranches", "Pain à cuir", "Pain panini", "Panneton", "Barres céréales", "Kelloggs bob", "Biscuit patient"
+        ],
+        "🧀 Frais & Crèmerie": [
+            "Gouda en tranches", "Fromages sachets", "Parmesan", "Mozza", "Oeufs Plein Air", "Crème alpro"
+        ],
+        "🥩 Boucherie & Plats": [
+            "Haché de poulet", "Jambon dégraissé", "Filet de York", "Salami milano", "Frites congelée", "Nouilles", "Sauces tomates croque", "Pesto rouge"
+        ],
+        "🍪 Collations & Épicerie": [
+            "Collations", "Fruits secs", "Café grain", "Bonbon miel", "Bonbon menthe", "Bon miel", "Miel", "Cubes bouillon", "Andalouse", "Sauce sojas sucré"
+        ],
+        "🧼 Entretien & Maison": [
+            "Lessive", "Lessive blanc", "Lessive couleur", "Adoucissant", "Produit wc", "Petits sacs poubelles", "Essuie-tout 3LG", "Pellets (Chauffage)", "Sel Adoucisseur"
+        ],
+        "🧴 Hygiène & Soins": [
+            "Papier WC", "Mouchoirs", "Cotons tiges", "Démaquillant yeux", "Démaquillant lait", "Pads", "Laque lidl", "Tampon + app"
+        ],
+        "👶 Bébé": [
+            "Couches", "Lingettes BB Eau", "Petit pot Clémentine", "Lait Suite Nutril.2"
+        ],
+        "🐱 Animaux": [
+            "Litière Chat", "Croquettes Chat"
+        ]
+    };
+
+    let currentCourses = [];
+
+    function initCourses() {
+        const local = localStorage.getItem('tribu_courses_v3');
+        if (local && JSON.parse(local).length > 0) {
+            currentCourses = JSON.parse(local);
+        } else {
+            currentCourses = [...initialActiveList];
+        }
+        renderUnifiedCourses();
+        renderCategorizedCatalog();
+
+        dbFirebase.ref('coursesTribu').on('value', snap => {
+            const data = snap.val();
+            if (data && data.list && data.list.length > 0) {
+                currentCourses = data.list;
             }
-        } catch (e) {}
+            localStorage.setItem('tribu_courses_v3', JSON.stringify(currentCourses));
+            renderUnifiedCourses();
+            document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
+            document.getElementById('syncStatus').style.color = "#059669";
+        }, err => {
+            document.getElementById('syncStatus').innerText = "⚠️ Sauvegarde locale active";
+            document.getElementById('syncStatus').style.color = "#d97706";
+        });
     }
 
-    // --- 3. EXERCICES SCOLAIRES P1 À P6 (Interactif + Impression) ---
+    function pushToFirebase() {
+        localStorage.setItem('tribu_courses_v3', JSON.stringify(currentCourses));
+        renderUnifiedCourses();
+        dbFirebase.ref('coursesTribu').set({ list: currentCourses })
+        .then(() => {
+            document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
+            document.getElementById('syncStatus').style.color = "#059669";
+        }).catch(() => {
+            document.getElementById('syncStatus').innerText = "⚠️ Sauvegardé localement";
+            document.getElementById('syncStatus').style.color = "#d97706";
+        });
+    }
+
+    function renderUnifiedCourses() {
+        const box = document.getElementById('unifiedListContainer');
+        box.innerHTML = "";
+        let count = 0;
+
+        currentCourses.forEach(it => {
+            if (!it.checked) count++;
+            const div = document.createElement('div');
+            div.className = `item-row ${it.checked ? 'checked' : ''}`;
+            div.innerHTML = `
+                <span style="font-weight:600;">${it.name}</span>
+                <div class="item-actions">
+                    <input type="number" class="qty-inline" value="${it.quantity}" min="1" onchange="updateCourseQty(${it.id}, this.value)">
+                    <button class="check-btn" onclick="toggleCourse(${it.id})">✓</button>
+                    <button class="remove-btn" onclick="deleteCourse(${it.id})">✕</button>
+                </div>
+            `;
+            box.appendChild(div);
+        });
+        document.getElementById('countCourses').innerText = count;
+    }
+
+    function renderCategorizedCatalog() {
+        const box = document.getElementById('categorizedCatalog');
+        box.innerHTML = "";
+
+        for (const [category, items] of Object.entries(categorizedCatalogData)) {
+            const card = document.createElement('div');
+            card.className = "catalog-cat-card";
+            card.innerHTML = `<div class="catalog-cat-title">${category}</div>`;
+
+            items.forEach(name => {
+                const row = document.createElement('div');
+                row.className = "item-row";
+                row.style.boxShadow = "none";
+                row.style.border = "none";
+                row.style.borderBottom = "1px solid #f8fafc";
+                row.style.padding = "8px 0";
+                row.innerHTML = `
+                    <span style="font-size:0.95em;">${name}</span>
+                    <button class="add-catalog-btn" onclick="addArticleFromCatalog('${name.replace(/'/g, "\\'")}')">+</button>
+                `;
+                card.appendChild(row);
+            });
+            box.appendChild(card);
+        }
+    }
+
+    function addArticleFromCatalog(name) {
+        const exist = currentCourses.find(i => i.name === name && !i.checked);
+        if (exist) exist.quantity += 1;
+        else currentCourses.push({ id: Date.now() + Math.random(), name: name, quantity: 1, checked: false });
+        pushToFirebase();
+    }
+
+    function addCustomItem() {
+        const inp = document.getElementById('newItemInput');
+        const qtyInp = document.getElementById('newItemQty');
+        const val = inp.value.trim();
+        const qty = parseInt(qtyInp.value) || 1;
+        if (val) {
+            const formatted = val.charAt(0).toUpperCase() + val.slice(1);
+            const exist = currentCourses.find(i => i.name === formatted && !i.checked);
+            if (exist) exist.quantity += qty;
+            else currentCourses.push({ id: Date.now() + Math.random(), name: formatted, quantity: qty, checked: false });
+            inp.value = ""; qtyInp.value = "1";
+            pushToFirebase();
+        }
+    }
+
+    function updateCourseQty(id, q) {
+        const it = currentCourses.find(i => i.id === id);
+        if (it) { it.quantity = Math.max(1, parseInt(q) || 1); pushToFirebase(); }
+    }
+
+    function toggleCourse(id) {
+        const it = currentCourses.find(i => i.id === id);
+        if (it) { it.checked = !it.checked; pushToFirebase(); }
+    }
+
+    function deleteCourse(id) {
+        currentCourses = currentCourses.filter(i => i.id !== id);
+        pushToFirebase();
+    }
+
+    function clearCourses() {
+        if (confirm("Vider entièrement la liste des courses ?")) {
+            currentCourses = []; pushToFirebase();
+        }
+    }
+
+    function shareList() {
+        let items = currentCourses.filter(i => !i.checked);
+        if (items.length === 0) return alert("Rien à acheter !");
+        let text = "🛒 *Courses de la Tribu* :\n\n";
+        items.forEach(i => text += `• ${i.quantity}x ${i.name}\n`);
+        if (navigator.share) navigator.share({ title: 'Courses Tribu', text: text });
+        else { navigator.clipboard.writeText(text); alert("Liste copiée !"); }
+    }
+
+    // --- EXERCICES SCOLAIRES P1 À P6 ---
     let currentExercises = [];
     const schoolDB = {
         fr: {
             P1: ["Sépare en syllabes : MOTO", "Trouve la voyelle : P _ PA", "Écris le mot : LE BOL"],
-            P2: ["Mets au pluriel : Le chat -> Les ...", "Trouve le verbe : Papa lit un livre.", "Le contraire de 'Grand' : ..."],
+            P2: ["Mets au pluriel : Le chat -> Les ...", "Trouve le verbe : Papa lit un livre.", "Contraire de 'Grand'"],
             P3: ["Conjugue (Présent) : Je (manger)", "Trouve le sujet : Le facteur sonne.", "Accord : Des pommes (vert)"],
-            P4: ["Conjugue (Futur) : Nous (finir)", "Trouve le COD : Marie cueille des fleurs.", "Mets au féminin : Un acteur"],
-            P5: ["Conjugue (Passé composé) : Elles (partir)", "Identifie l'adverbe : Il marche lentement.", "Accorde : Ces robes sont (rouge foncé)"],
-            P6: ["Conjugue (Subjonctif présent) : Il faut que tu (venir)", "Voix passive : Le chat mange la souris -> ...", "Nature du mot 'souvent'"]
+            P4: ["Conjugue (Futur) : Nous (finir)", "Trouve le COD : Marie cueille des fleurs."],
+            P5: ["Conjugue (Passé composé) : Elles (partir)", "Identifie l'adverbe : Il marche lentement."],
+            P6: ["Conjugue (Subjonctif présent) : Il faut que tu (venir)", "Voix passive : Le chat mange la souris"]
         },
         dictee: {
             P1: ["le mur", "un vélo", "le soleil"],
             P2: ["le cahier", "la maison", "une souris"],
             P3: ["beaucoup", "aujourd'hui", "un village"],
-            P4: ["une bibliothèque", "un dictionnaire", "un voyageur"],
-            P5: ["scrupuleusement", "un événement", "une circonstance"],
-            P6: ["indiscutablement", "la bienveillance", "un acquiescement"]
+            P4: ["une bibliothèque", "un voyageur"],
+            P5: ["scrupuleusement", "un événement"],
+            P6: ["indiscutablement", "la bienveillance"]
         },
         lecture: {
             P1: [{ q: "Le chat dort sur le lit. Où dort le chat ?", a: "lit" }],
-            P2: [{ q: "Léa mange une pomme rouge dans la cuisine. Que mange Léa ?", a: "pomme" }],
-            P3: [{ q: "Le train arrive en gare avec 10 minutes de retard. Quel transport est cité ?", a: "train" }],
-            P4: [{ q: "Les hirondelles migrent vers le sud en hiver pour chercher la chaleur. Quel animal migre ?", a: "hirondelle" }],
-            P5: [{ q: "Au Moyen Âge, le pont-levis permettait d'entrer dans la forteresse. Quelle construction est décrite ?", a: "forteresse" }],
-            P6: [{ q: "L'énergie cinétique dépend directement de la masse et de la vitesse d'un corps. De quelle grandeur parle-t-on ?", a: "vitesse" }]
+            P2: [{ q: "Léa mange une pomme rouge. Que mange Léa ?", a: "pomme" }],
+            P3: [{ q: "Le train arrive avec 10 minutes de retard. Quel transport ?", a: "train" }],
+            P4: [{ q: "Les hirondelles migrent au sud en hiver. Quel oiseau ?", a: "hirondelle" }],
+            P5: [{ q: "Au Moyen Âge, le pont-levis fermait le château. Quel monument ?", a: "château" }],
+            P6: [{ q: "L'énergie cinétique dépend de la vitesse. Quelle grandeur ?", a: "vitesse" }]
         },
         cg: {
-            P1: ["Quelle est la couleur du ciel dégagé ?", "Quel animal aboie ?"],
-            P2: ["Combien de jours compte une semaine ?", "Capitale de la Belgique ?"],
-            P3: ["Combien de minutes dans une heure ?", "Dans quel pays vivons-nous ?"],
-            P4: ["Fleuve qui passe à Liège ?", "Combien de provinces compte la Belgique ?"],
+            P1: ["Couleur du ciel ensoleillé ?", "Quel animal aboie ?"],
+            P2: ["Jours dans une semaine ?", "Capitale de la Belgique ?"],
+            P3: ["Minutes dans une heure ?", "Dans quel pays vivons-nous ?"],
+            P4: ["Fleuve qui traverse Liège ?", "Provinces en Belgique ?"],
             P5: ["Planète la plus proche du Soleil ?", "Qui était Charlemagne ?"],
-            P6: ["Organe qui pompe le sang ?", "Année de la révolution belge (1830) ?"]
+            P6: ["Organe qui pompe le sang ?", "Année de l'indépendance belge (1830) ?"]
         }
     };
 
@@ -435,25 +906,24 @@
                 else if (grade === 'P2') { n1 = Math.floor(Math.random()*30)+10; n2 = Math.floor(Math.random()*20); res = n1+n2; }
                 else if (grade === 'P3') { n1 = Math.floor(Math.random()*9)+2; n2 = Math.floor(Math.random()*9)+2; op = "x"; res = n1*n2; }
                 else if (grade === 'P4') { n1 = Math.floor(Math.random()*50)+10; n2 = Math.floor(Math.random()*9)+2; op = "x"; res = n1*n2; }
-                else if (grade === 'P5') { n1 = (Math.random()*50).toFixed(1); n2 = (Math.random()*20).toFixed(1); res = (parseFloat(n1)+parseFloat(n2)).toFixed(1); }
+                else if (grade === 'P5') { n1 = (Math.random()*40).toFixed(1); n2 = (Math.random()*20).toFixed(1); res = (parseFloat(n1)+parseFloat(n2)).toFixed(1); }
                 else { n1 = Math.floor(Math.random()*100)+20; n2 = Math.floor(Math.random()*8)+2; op = "÷"; res = Math.floor(n1/n2); n1 = res * n2; }
 
                 currentExercises.push({ question: `${n1} ${op} ${n2} =`, answer: res.toString() });
             }
         } else if (subj === 'lecture') {
             const list = schoolDB.lecture[grade] || schoolDB.lecture['P3'];
-            list.forEach(item => currentExercises.push({ question: item.q, answer: item.a.toLowerCase() }));
+            list.forEach(it => currentExercises.push({ question: it.q, answer: it.a.toLowerCase() }));
         } else {
             const list = schoolDB[subj][grade] || schoolDB[subj]['P2'];
-            list.forEach(item => currentExercises.push({ question: item, answer: "" }));
+            list.forEach(it => currentExercises.push({ question: it, answer: "" }));
         }
 
         currentExercises.forEach((ex, idx) => {
             const div = document.createElement('div');
-            div.className = "exercise-item pop";
+            div.className = "exercise-item";
             div.id = `ex-row-${idx}`;
-            div.innerHTML = `<span><strong>${idx + 1}.</strong> ${ex.question}</span>
-                             <input type="text" id="ans-${idx}" placeholder="Réponse...">`;
+            div.innerHTML = `<span><strong>${idx + 1}.</strong> ${ex.question}</span><input type="text" id="ans-${idx}" placeholder="Réponse...">`;
             container.appendChild(div);
         });
 
@@ -462,41 +932,29 @@
     }
 
     function verifySchoolAnswers() {
-        let correctCount = 0;
-        let totalAnswered = 0;
-
+        let correct = 0, total = 0;
         currentExercises.forEach((ex, idx) => {
             const row = document.getElementById(`ex-row-${idx}`);
-            const input = document.getElementById(`ans-${idx}`);
-            const val = input.value.trim().toLowerCase();
-
+            const val = document.getElementById(`ans-${idx}`).value.trim().toLowerCase();
+            total++;
             if (ex.answer !== "") {
-                totalAnswered++;
-                if (val === ex.answer.toLowerCase()) {
-                    row.className = "exercise-item correct";
-                    correctCount++;
-                } else {
-                    row.className = "exercise-item wrong shake";
-                }
+                if (val === ex.answer.toLowerCase()) { row.className = "exercise-item correct"; correct++; }
+                else { row.className = "exercise-item wrong"; }
             } else {
-                if (val.length > 0) correctCount++;
-                totalAnswered++;
+                if (val.length > 0) correct++;
                 row.className = "exercise-item correct";
             }
         });
-
         const fb = document.getElementById('schoolFeedback');
-        if (correctCount === totalAnswered && totalAnswered > 0) {
-            fb.innerHTML = `🌟 Bravo ! Tout est réussi (${correctCount}/${totalAnswered}) !`;
-            fb.style.color = "#27ae60";
-            playSound('success');
+        if (correct === total && total > 0) {
+            fb.innerText = `Bravo ! Réussite totale (${correct}/${total}) !`;
+            fb.style.color = "#059669";
             if (!isCurrentParent && currentUser) {
-                dbFirebase.ref('activites/' + currentUser).push({ date: new Date().toLocaleString(), tache: `Exercice réussi (${correctCount}/${totalAnswered})` });
+                dbFirebase.ref('activites/' + currentUser).push({ date: new Date().toLocaleString(), tache: `Exercice parfait (${correct}/${total})` });
             }
         } else {
-            fb.innerHTML = `Encore un petit effort : ${correctCount} / ${totalAnswered} correctes.`;
-            fb.style.color = "#e67e22";
-            playSound('error');
+            fb.innerText = `Score : ${correct} / ${total}. Continue pour progresser !`;
+            fb.style.color = "#d97706";
         }
     }
 
@@ -512,15 +970,12 @@
 
     function renderPrintQueue() {
         const zone = document.getElementById('printQueueContent');
-        if (printQueue.length === 0) {
-            zone.innerHTML = "Aucun exercice sélectionné.";
-            return;
-        }
+        if (printQueue.length === 0) { zone.innerHTML = "Aucun exercice sélectionné."; return; }
         zone.innerHTML = "";
-        printQueue.forEach((block, idx) => {
+        printQueue.forEach((b, idx) => {
             const div = document.createElement('div');
             div.className = "print-entry";
-            div.innerHTML = `<h3>Section ${idx + 1}</h3>` + block;
+            div.innerHTML = `<h3>Série d'exercices ${idx + 1}</h3>` + b;
             zone.appendChild(div);
         });
     }
@@ -531,109 +986,81 @@
         renderPrintQueue();
     }
 
-    // --- 4. MODULE JEUX (Sudoku, Mots Croisés, Échecs) ---
+    // --- MODULE JEUX ---
     function switchGameSubView() {
         const val = document.getElementById('gameSubSelect').value;
         document.getElementById('sub-sudoku').style.display = val === 'sudoku' ? 'block' : 'none';
         document.getElementById('sub-crosswords').style.display = val === 'crosswords' ? 'block' : 'none';
         document.getElementById('sub-chess').style.display = val === 'chess' ? 'block' : 'none';
-
         if (val === 'sudoku') initSudoku();
         if (val === 'crosswords') initCrossword();
         if (val === 'chess') { initBoard(); nextChessTarget(); }
     }
 
-    // Sudoku 4x4
-    const sudokuSolutions = [
-        [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]],
-        [[2,1,4,3],[4,3,2,1],[1,2,3,4],[3,4,1,2]]
-    ];
-    let currentSudokuSol = [];
-
+    const sudokuSol = [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];
     function initSudoku() {
-        const container = document.getElementById('sudokuGridContainer');
-        container.innerHTML = "";
-        const board = document.createElement('div');
-        board.className = "sudoku-board";
-        currentSudokuSol = sudokuSolutions[Math.floor(Math.random()*sudokuSolutions.length)];
-
+        const c = document.getElementById('sudokuGridContainer');
+        c.innerHTML = "";
+        const b = document.createElement('div');
+        b.className = "sudoku-board";
         for (let r = 0; r < 4; r++) {
-            for (let c = 0; c < 4; c++) {
+            for (let col = 0; col < 4; col++) {
                 const inp = document.createElement('input');
                 inp.className = "sudoku-cell";
-                inp.id = `sdk-${r}-${c}`;
+                inp.id = `sdk-${r}-${col}`;
                 inp.maxLength = 1;
-                if (Math.random() > 0.45) {
-                    inp.value = currentSudokuSol[r][c];
-                    inp.disabled = true;
-                }
-                board.appendChild(inp);
+                if (Math.random() > 0.45) { inp.value = sudokuSol[r][col]; inp.disabled = true; }
+                b.appendChild(inp);
             }
         }
-        container.appendChild(board);
+        c.appendChild(b);
         document.getElementById('sudokuFeedback').innerText = "";
     }
 
     function checkSudoku() {
-        let valid = true;
+        let ok = true;
         for (let r = 0; r < 4; r++) {
             for (let c = 0; c < 4; c++) {
-                const inp = document.getElementById(`sdk-${r}-${c}`);
-                if (parseInt(inp.value) !== currentSudokuSol[r][c]) valid = false;
+                if (parseInt(document.getElementById(`sdk-${r}-${c}`).value) !== sudokuSol[r][c]) ok = false;
             }
         }
         const fb = document.getElementById('sudokuFeedback');
-        if (valid) {
-            fb.innerText = "🏆 Bravo, Sudoku réussi !"; fb.style.color = "#27ae60"; playSound('success');
-        } else {
-            fb.innerText = "Il y a des erreurs, réessaie !"; fb.style.color = "#e74c3c"; playSound('error');
-        }
+        fb.innerText = ok ? "Bravo, Sudoku complété !" : "Des chiffres sont manquants ou erronés.";
+        fb.style.color = ok ? "#059669" : "#ef4444";
     }
 
-    // Mots Fléchés simplifiés
     function initCrossword() {
-        const container = document.getElementById('cwContainer');
-        container.innerHTML = "";
-        const grid = document.createElement('div');
-        grid.className = "cw-grid";
-        // Grille 5x2 simple
-        const solution = [
-            ['C','H','A','T','#'],
-            ['S','O','L','E','I']
-        ];
+        const c = document.getElementById('cwContainer');
+        c.innerHTML = "";
+        const g = document.createElement('div');
+        g.className = "cw-grid";
+        const sol = [['C','H','A','T','#'],['S','O','L','E','I']];
         for (let r = 0; r < 2; r++) {
-            for (let c = 0; c < 5; c++) {
+            for (let col = 0; col < 5; col++) {
                 const inp = document.createElement('input');
                 inp.className = "cw-cell";
-                inp.id = `cw-${r}-${c}`;
+                inp.id = `cw-${r}-${col}`;
                 inp.maxLength = 1;
-                if (solution[r][c] === '#') {
-                    inp.className += " cw-black";
-                    inp.disabled = true;
-                }
-                grid.appendChild(inp);
+                if (sol[r][col] === '#') { inp.className += " cw-black"; inp.disabled = true; }
+                g.appendChild(inp);
             }
         }
-        container.appendChild(grid);
+        c.appendChild(g);
     }
 
     function checkCrossword() {
         const sol = [['C','H','A','T','#'],['S','O','L','E','I']];
         let ok = true;
         for (let r = 0; r < 2; r++) {
-            for (let c = 0; c < 5; c++) {
-                if (sol[r][c] !== '#') {
-                    const val = document.getElementById(`cw-${r}-${c}`).value.toUpperCase();
-                    if (val !== sol[r][c]) ok = false;
-                }
+            for (let col = 0; col < 5; col++) {
+                if (sol[r][col] !== '#' && document.getElementById(`cw-${r}-${col}`).value.toUpperCase() !== sol[r][col]) ok = false;
             }
         }
         const fb = document.getElementById('cwFeedback');
-        if (ok) { fb.innerText = "🎉 Mots validés !"; fb.style.color = "green"; playSound('success'); }
-        else { fb.innerText = "Il y a des lettres incorrectes."; fb.style.color = "red"; playSound('error'); }
+        fb.innerText = ok ? "Mots croisés réussis !" : "Vérifiez vos réponses.";
+        fb.style.color = ok ? "#059669" : "#ef4444";
     }
 
-    // Échecs
     let chessTarget = "";
     const chessCols = ['a','b','c','d','e','f','g','h'];
     function initBoard() {
@@ -647,11 +1074,9 @@
                 sq.onclick = () => {
                     const fb = document.getElementById('chessFeedback');
                     if (pos === chessTarget) {
-                        fb.innerText = "✅ Exact ! Bien joué !"; fb.style.color = "green";
-                        playSound('success'); setTimeout(nextChessTarget, 1000);
+                        fb.innerText = "Exact !"; fb.style.color = "#059669"; setTimeout(nextChessTarget, 800);
                     } else {
-                        fb.innerText = `❌ Non, c'est la case ${pos}`; fb.style.color = "red";
-                        playSound('error');
+                        fb.innerText = `Non, c'est ${pos}`; fb.style.color = "#ef4444";
                     }
                 };
                 b.appendChild(sq);
@@ -664,17 +1089,16 @@
         document.getElementById('chessFeedback').innerText = "";
     }
 
-    // --- 5. LANGUES ---
+    // --- LANGUES ---
     const nlWords = {
         colors: [{fr:"Rouge", nl:"Rood"}, {fr:"Bleu", nl:"Blauw"}, {fr:"Vert", nl:"Groen"}],
-        animals: [{fr:"Chien", nl:"Hond"}, {fr:"Chat", nl:"Kat"}, {fr:"Oiseau", nl:"Vogel"}],
-        numbers: [{fr:"Un", nl:"Een"}, {fr:"Deux", nl:"Twee"}, {fr:"Trois", nl:"Drie"}]
+        animals: [{fr:"Chien", nl:"Hond"}, {fr:"Chat", nl:"Kat"}],
+        numbers: [{fr:"Un", nl:"Een"}, {fr:"Deux", nl:"Twee"}]
     };
     let currentNl = { fr: "Rouge", nl: "Rood" };
     let showingNlFr = true;
     function nextNlWord() {
-        const cat = document.getElementById('nlCategory').value;
-        const arr = nlWords[cat];
+        const arr = nlWords[document.getElementById('nlCategory').value];
         currentNl = arr[Math.floor(Math.random()*arr.length)];
         showingNlFr = true;
         updateNlCard();
@@ -683,134 +1107,17 @@
     function updateNlCard() {
         const c = document.getElementById('nlCard');
         c.innerText = showingNlFr ? currentNl.fr + " 🇫🇷" : currentNl.nl + " 🇳🇱";
-        c.style.background = showingNlFr ? "#3498db" : "#f39c12";
+        c.style.background = showingNlFr ? "#0284c7" : "#f59e0b";
     }
 
     function verifyEnglish() {
         const val = document.getElementById('engInput').value.trim().toLowerCase();
         const fb = document.getElementById('engFeedback');
         if (val === "the black cat") {
-            fb.innerText = "Well done! Perfect translation."; fb.style.color = "green"; playSound('success');
+            fb.innerText = "Parfait !"; fb.style.color = "#059669";
         } else {
-            fb.innerText = "Not quite: 'The black cat'"; fb.style.color = "red"; playSound('error');
+            fb.innerText = "Réponse attendue : 'The black cat'"; fb.style.color = "#ef4444";
         }
-    }
-
-    // --- 6. GESTION DES COURSES (Synchronisation & Liste complète) ---
-    let currentCoursesList = [];
-    const defaultCatalog = {
-        "📦 Stock Garage / Maison (Drive)": {
-            type: "drive",
-            items: ["Cannettes", "Couches", "Croquettes Chat", "Eau", "Eau Minérale / Gazeuse", "Essuie-tout 3LG", "Grd Perrier", "Lait Suite Nutril.2", "Lessive", "Lingettes BB Eau", "Litière Chat", "Papier WC", "Pellets (Chauffage)", "Pepsi", "Pepsi x3", "Petit perrier", "SPA Reine Eau", "Sel Adoucisseur", "Sojas normal", "Vin"]
-        },
-        "🛒 Frais & Dépannage (Magasin)": {
-            type: "magasin",
-            items: ["Adoucissant", "Andalouse", "Bananes", "Barres céréales", "Boisson de Soja Vanille", "Café grain", "Cecemel", "Collations", "Cotons tiges", "Courgettes", "Crème alpro", "Cubes bouillon", "Filet de York", "Frites congelée", "Fromages sachets", "Fruits secs", "Gouda en tranches", "Haché de poulet", "Jambon dégraissé", "Kelloggs bob", "Laque lidl", "Lessive blanc", "Lessive couleur", "Miel", "Mouchoirs", "Mozza", "Nouilles", "Oeufs Plein Air", "Pads", "Pain / Baguette", "Pain panini", "Pain tranches", "Pain à cuir", "Parmesan", "Pesto rouge", "Petit pot Clémentine", "Petits sacs poubelles", "Pommes", "Produit wc", "Salami milano", "Salade", "Sauce sojas sucré", "Sauces tomates croque", "Tampon + app", "Tomates", "Tomates Snack", "Tomates pelées"]
-        }
-    };
-    let catalog = JSON.parse(JSON.stringify(defaultCatalog));
-
-    function initCourses() {
-        const local = localStorage.getItem('tribu_courses_list');
-        if (local) currentCoursesList = JSON.parse(local);
-        renderCourses();
-        renderCatalog();
-
-        dbFirebase.ref('coursesTribu').on('value', snap => {
-            const data = snap.val();
-            if (data && data.list) currentCoursesList = data.list;
-            if (data && data.catalog) catalog = data.catalog;
-            renderCourses();
-            renderCatalog();
-            document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
-        });
-    }
-
-    function pushToFirebase() {
-        localStorage.setItem('tribu_courses_list', JSON.stringify(currentCoursesList));
-        dbFirebase.ref('coursesTribu').set({ list: currentCoursesList, catalog: catalog });
-        renderCourses();
-    }
-
-    function renderCourses() {
-        const dBox = document.getElementById('listDrive');
-        const mBox = document.getElementById('listMagasin');
-        dBox.innerHTML = ""; mBox.innerHTML = "";
-        let cD = 0, cM = 0;
-
-        currentCoursesList.forEach(item => {
-            if (!item.checked) { if (item.type === 'drive') cD++; else cM++; }
-            const div = document.createElement('div');
-            div.className = `item ${item.checked ? 'checked' : ''}`;
-            div.innerHTML = `<span>${item.name}</span>
-                             <div>
-                                <input type="number" class="qty-inline" value="${item.quantity}" onchange="updateQty(${item.id}, this.value)">
-                                <button style="background:#17a2b8; color:white; border:none; padding:4px 8px; border-radius:4px;" onclick="toggleCourse(${item.id})">✓</button>
-                                <button style="background:#dc3545; color:white; border:none; padding:4px 8px; border-radius:4px;" onclick="deleteCourse(${item.id})">X</button>
-                             </div>`;
-            if (item.type === 'drive') dBox.appendChild(div); else mBox.appendChild(div);
-        });
-        document.getElementById('countDrive').innerText = cD;
-        document.getElementById('countMagasin').innerText = cM;
-    }
-
-    function renderCatalog() {
-        const c = document.getElementById('catalogContainer');
-        c.innerHTML = "";
-        for (const [title, data] of Object.entries(catalog)) {
-            const box = document.createElement('div');
-            box.innerHTML = `<strong>${title}</strong>`;
-            data.items.slice(0, 10).forEach(it => {
-                const row = document.createElement('div');
-                row.className = "item";
-                row.innerHTML = `<span>${it}</span><button class="add-btn" style="background:#28a745; color:white; border:none; padding:4px 8px; border-radius:3px;" onclick="addCourseItem('${it.replace(/'/g, "\\'")}', '${data.type}', 1)">+</button>`;
-                box.appendChild(row);
-            });
-            c.appendChild(box);
-        }
-    }
-
-    function addCourseItem(name, type, qty) {
-        const exist = currentCoursesList.find(i => i.name === name && i.type === type && !i.checked);
-        if (exist) exist.quantity += parseInt(qty);
-        else currentCoursesList.push({ id: Date.now(), name: name, type: type, quantity: parseInt(qty), checked: false });
-        pushToFirebase();
-    }
-
-    function addCustomItem() {
-        const input = document.getElementById('newItemInput');
-        const qty = parseInt(document.getElementById('newItemQty').value) || 1;
-        const type = document.getElementById('itemType').value;
-        if (input.value.trim()) {
-            addCourseItem(input.value.trim(), type, qty);
-            input.value = "";
-        }
-    }
-
-    function updateQty(id, q) {
-        const it = currentCoursesList.find(i => i.id === id);
-        if (it) { it.quantity = parseInt(q); pushToFirebase(); }
-    }
-
-    function toggleCourse(id) {
-        const it = currentCoursesList.find(i => i.id === id);
-        if (it) { it.checked = !it.checked; pushToFirebase(); }
-    }
-
-    function deleteCourse(id) {
-        currentCoursesList = currentCoursesList.filter(i => i.id !== id);
-        pushToFirebase();
-    }
-
-    function clearCourses() {
-        if (confirm("Vider la liste ?")) { currentCoursesList = []; pushToFirebase(); }
-    }
-
-    function shareList() {
-        let t = "🛒 Courses de la Tribu :\n";
-        currentCoursesList.filter(i => !i.checked).forEach(i => t += `• ${i.quantity}x ${i.name} (${i.type})\n`);
-        if (navigator.share) navigator.share({ title: 'Courses', text: t });
-        else { navigator.clipboard.writeText(t); alert("Copié !"); }
     }
 </script>
 </body>
