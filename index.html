@@ -93,6 +93,7 @@
         <button id="backBtn" onclick="showDashboard()">Retour</button>
     </div>
 
+    <!-- ÉCRAN DE CONNEXION -->
     <div id="login-screen">
         <h2>Qui est là ?</h2>
         <div class="profiles">
@@ -115,6 +116,7 @@
         <div class="widget-grid" id="widgetGrid"></div>
     </div>
 
+    <!-- APP COURSES -->
     <div id="app-courses" class="app-view">
         <div style="text-align: center; font-style: italic; color: #666; margin-top: -10px; margin-bottom: 20px; font-size: 14px;">Organisation Hybride : Drive (Stock) + Magasin (Frais)</div>
 
@@ -146,11 +148,12 @@
         </div>
 
         <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button onclick="shareList()" style="background-color: var(--messenger); flex: 2; min-width: 200px; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight:bold;">💬 Partager via Messenger</button>
+            <button onclick="shareList()" style="background-color: var(--messenger); flex: 1; min-width: 150px; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight:bold;">💬 Partager</button>
+            <button onclick="manualSave()" style="background-color: #27ae60; flex: 1; min-width: 150px; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight:bold;">💾 Sauvegarder</button>
             <button onclick="clearList()" style="background-color: #6c757d; flex: 1; min-width: 100px; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight:bold;">Vider tout</button>
         </div>
 
-        <div id="syncStatus" style="font-size:12px; color:#888; margin-top:10px; text-align:center;">🔄 Connexion...</div>
+        <div id="syncStatus" style="font-size:12px; font-weight:bold; color:#888; margin-top:10px; text-align:center;">🔄 Connexion...</div>
 
         <div class="panel" style="margin-top: 20px;">
             <h2 style="margin-top:0; color:var(--primary);">Ajout Rapide</h2>
@@ -260,8 +263,6 @@
         document.getElementById(appId).style.display = 'block';
         document.getElementById('headerTitle').innerText = title;
         document.getElementById('backBtn').style.display = 'block';
-        if(appId === 'app-chess') { initBoard(); nextTarget(); }
-        if(appId === 'app-lang') { nextNlWord(); }
     }
 
     function showDashboard() {
@@ -271,6 +272,7 @@
         document.getElementById('backBtn').style.display = 'none';
     }
 
+    // --- LOGIQUE COURSES AVEC SAUVEGARDE LOCALE ANTI-PERTE ---
     let currentList = [];
     const defaultCatalog = {
         "📦 Stock Garage / Maison (Drive)": {
@@ -279,26 +281,38 @@
         },
         "🛒 Frais & Dépannage (Magasin)": {
             type: "magasin",
-            items: ["Adoucissant", "Bananes", "Barres céréales", "Boisson de Soja Vanille", "Café grain", "Courgettes", "Crème alpro", "Cubes bouillon", "Filet de York", "Fromages sachets", "Fruits secs", "Gouda en tranches", "Haché de poulet", "Jambon dégraissé", "Laque lidl", "Lessive blanc", "Lessive couleur", "Miel", "Mozza", "Nouilles", "Oeufs Plein Air", "Pain / Baguette", "Pain panini", "Pain tranches", "Pain à cuir", "Parmesan", "Petit pot Clémentine", "Pommes", "Produit wc", "Salami milano", "Salade", "Sauce sojas sucré", "Sauces tomates croque", "Tomates", "Tomates Snack"]
+            items: ["Adoucissant", "Bananes", "Barres céréales", "Boisson de Soja Vanille", "Café grain", "Cecemel", "Courgettes", "Crème alpro", "Cubes bouillon", "Filet de York", "Frites congelée", "Fromages sachets", "Fruits secs", "Gouda en tranches", "Haché de poulet", "Jambon dégraissé", "Laque lidl", "Lessive blanc", "Lessive couleur", "Miel", "Mozza", "Nouilles", "Oeufs Plein Air", "Pain / Baguette", "Pain panini", "Pain tranches", "Pain à cuir", "Parmesan", "Pesto rouge", "Petit pot Clémentine", "Pommes", "Produit wc", "Salami milano", "Salade", "Sauce sojas sucré", "Sauces tomates croque", "Tomates", "Tomates Snack"]
         }
     };
     let catalog = JSON.parse(JSON.stringify(defaultCatalog));
 
     function initCourses() {
         if(!isCurrentParent) return;
+        
+        // 1. Charge d'abord la mémoire locale du téléphone (affichage instantané)
+        const localList = localStorage.getItem('tribu_courses_list');
+        const localCat = localStorage.getItem('tribu_courses_catalog');
+        if(localList) currentList = JSON.parse(localList);
+        if(localCat) catalog = JSON.parse(localCat);
+        renderLists(); renderCatalog();
+
+        // 2. Écoute Firebase en arrière-plan
         dbFirebase.ref('coursesTribu').on('value', (snapshot) => {
             const data = snapshot.val();
-            currentList = (data && data.list) ? data.list : [];
-            let fbCatalog = (data && data.catalog) ? data.catalog : null;
-            catalog = JSON.parse(JSON.stringify(defaultCatalog));
-            if(fbCatalog) {
-                if(fbCatalog["📦 Stock Garage / Maison (Drive)"]) catalog["📦 Stock Garage / Maison (Drive)"].items = [...new Set([...catalog["📦 Stock Garage / Maison (Drive)"].items, ...fbCatalog["📦 Stock Garage / Maison (Drive)"].items])];
-                if(fbCatalog["🛒 Frais & Dépannage (Magasin)"]) catalog["🛒 Frais & Dépannage (Magasin)"].items = [...new Set([...catalog["🛒 Frais & Dépannage (Magasin)"].items, ...fbCatalog["🛒 Frais & Dépannage (Magasin)"].items])];
+            if(data) {
+                if(data.list) currentList = data.list;
+                if(data.catalog) {
+                    if(data.catalog["📦 Stock Garage / Maison (Drive)"]) catalog["📦 Stock Garage / Maison (Drive)"].items = [...new Set([...catalog["📦 Stock Garage / Maison (Drive)"].items, ...data.catalog["📦 Stock Garage / Maison (Drive)"].items])];
+                    if(data.catalog["🛒 Frais & Dépannage (Magasin)"]) catalog["🛒 Frais & Dépannage (Magasin)"].items = [...new Set([...catalog["🛒 Frais & Dépannage (Magasin)"].items, ...data.catalog["🛒 Frais & Dépannage (Magasin)"].items])];
+                }
             }
             document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
+            document.getElementById('syncStatus').style.color = "#27ae60";
+            saveLocally(); // Met à jour la sauvegarde locale
             renderLists(); renderCatalog();
         }, (error) => {
-            alert("Erreur de lecture : " + error.message);
+            document.getElementById('syncStatus').innerText = "⚠️ Mode hors-ligne (téléphone uniquement)";
+            document.getElementById('syncStatus').style.color = "#e67e22";
         });
         
         document.getElementById("newItemInput").addEventListener("keypress", function(event) {
@@ -306,18 +320,30 @@
         });
     }
 
+    function saveLocally() {
+        localStorage.setItem('tribu_courses_list', JSON.stringify(currentList));
+        localStorage.setItem('tribu_courses_catalog', JSON.stringify(catalog));
+    }
+
     function pushToFirebase() {
+        saveLocally(); // Sauvegarde toujours sur le téléphone
+        renderLists(); 
         document.getElementById('syncStatus').innerText = "🔄 Synchronisation...";
-        renderLists(); // Force l'affichage local immédiatement
+        document.getElementById('syncStatus').style.color = "#888";
         
         dbFirebase.ref('coursesTribu').set({ list: currentList, catalog: catalog })
         .then(() => {
             document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
-        })
-        .catch((error) => {
-            alert("❌ Erreur Firebase: L'écriture a été refusée. Avez-vous bien cliqué sur 'Publier' dans l'onglet Règles sur Firebase ?");
-            document.getElementById('syncStatus').innerText = "❌ Erreur de sauvegarde";
+            document.getElementById('syncStatus').style.color = "#27ae60";
+        }).catch((error) => {
+            document.getElementById('syncStatus').innerText = "⚠️ Enregistré sur le téléphone (Erreur réseau)";
+            document.getElementById('syncStatus').style.color = "#e67e22";
         });
+    }
+
+    function manualSave() {
+        pushToFirebase();
+        alert("💾 Vos courses sont bien sauvegardées !");
     }
 
     function renderCatalog() {
@@ -413,12 +439,12 @@
         else { navigator.clipboard.writeText(text); alert("Liste copiée ! Vous pouvez maintenant la coller dans votre conversation Messenger."); }
     }
 
+    // --- RESTE DES APPS ---
     function saveScore(activite) {
         if(isCurrentParent) return;
         dbFirebase.ref('activites/' + currentUser).push({ date: new Date().toLocaleString(), tache: activite });
         alert("Super ! Papa et Maman ont reçu ton travail. 🌟"); showDashboard();
     }
-
     function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1) + min); }
     function generateExercise() {
         const grade = document.getElementById('gradeSelect').value; const subj = document.getElementById('subjectSelect').value;
@@ -428,13 +454,11 @@
         else { html += "Réponds aux questions sur une feuille :<br><br>1) Question 1... <br>2) Question 2..."; }
         document.getElementById('exerciseOutput').innerHTML = html; document.getElementById('btnFinished').style.display = isCurrentParent ? 'none' : 'block';
     }
-
     const nlDict = { colors: [{fr:"Rouge", nl:"Rood"}, {fr:"Bleu", nl:"Blauw"}], animals: [{fr:"Chien", nl:"Hond"}] };
     let currentNlWord = {}; let isShowingFr = true;
     function nextNlWord() { const arr = nlDict[document.getElementById('nlCategory').value]; currentNlWord = arr[randomInt(0, arr.length-1)]; isShowingFr = true; updateCard(); }
     function flipCard() { isShowingFr = !isShowingFr; updateCard(); }
     function updateCard() { const card = document.getElementById('nlCard'); card.innerText = isShowingFr ? currentNlWord.fr : currentNlWord.nl; card.style.background = isShowingFr ? "#2980b9" : "#f39c12"; }
-
     let cTarget = ""; const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     function initBoard() { const board = document.getElementById('board'); if(board.innerHTML !== "") return; for (let row = 8; row >= 1; row--) { for (let col = 0; col < 8; col++) { const square = document.createElement('div'); square.className = 'square ' + ((row + col) % 2 !== 0 ? 'black' : 'white'); const coord = letters[col] + row; square.onclick = () => { if(coord === cTarget) { document.getElementById('chessFeedback').innerText = "✅ Bravo !"; setTimeout(nextTarget, 800); } else { document.getElementById('chessFeedback').innerText = "❌ Non, c'est " + coord; } }; board.appendChild(square); } } }
     function nextTarget() { cTarget = letters[randomInt(0,7)] + (randomInt(0,7)+1); document.getElementById('targetSquare').innerText = cTarget; document.getElementById('chessFeedback').innerText = ""; }
