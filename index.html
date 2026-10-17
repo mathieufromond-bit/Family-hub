@@ -76,33 +76,12 @@
         }
         .nav-btn:hover { background: #e2e8f0; }
 
-        /* ÉCRAN DE CONNEXION / SÉLECTION PROFIL */
-        #login-screen { 
-            padding: 60px 24px 40px; 
-            text-align: center; 
-        }
-        .login-hero-title { 
-            font-size: 1.8em; 
-            font-weight: 800; 
-            letter-spacing: -0.03em; 
-            margin-bottom: 8px;
-            color: var(--primary);
-        }
-        .login-hero-sub { 
-            font-size: 0.95em; 
-            color: var(--text-muted); 
-            margin-bottom: 40px; 
-        }
-        .profiles-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 20px; 
-            max-width: 480px; 
-            margin: 0 auto; 
-        }
-        @media (min-width: 540px) {
-            .profiles-grid { grid-template-columns: repeat(4, 1fr); }
-        }
+        /* ÉCRAN DE CONNEXION / PROFIL */
+        #login-screen { padding: 60px 24px 40px; text-align: center; }
+        .login-hero-title { font-size: 1.8em; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; color: var(--primary); }
+        .login-hero-sub { font-size: 0.95em; color: var(--text-muted); margin-bottom: 40px; }
+        .profiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 480px; margin: 0 auto; }
+        @media (min-width: 540px) { .profiles-grid { grid-template-columns: repeat(4, 1fr); } }
 
         .profile-card { 
             background: #ffffff; 
@@ -116,23 +95,11 @@
             align-items: center;
             box-shadow: var(--shadow-subtle);
         }
-        .profile-card:hover { 
-            transform: translateY(-4px); 
-            border-color: #cbd5e1;
-            box-shadow: var(--shadow-elevated); 
-        }
+        .profile-card:hover { transform: translateY(-4px); border-color: #cbd5e1; box-shadow: var(--shadow-elevated); }
         .avatar-circle { 
-            width: 72px; 
-            height: 72px; 
-            border-radius: var(--radius-full); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 2.2em; 
-            margin-bottom: 12px;
-            background: #f8fafc;
-            border: 2px solid transparent;
-            transition: all 0.2s ease;
+            width: 72px; height: 72px; border-radius: var(--radius-full); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 2.2em; margin-bottom: 12px; background: #f8fafc; border: 2px solid transparent; 
         }
         .profile-card.parent .avatar-circle { background: #fff1f2; border-color: #fecdd3; }
         .profile-card.kid .avatar-circle { background: #ecfdf5; border-color: #a7f3d0; }
@@ -156,7 +123,7 @@
         }
         .key-btn:active { background: #f1f5f9; transform: scale(0.92); }
 
-        /* PARAMÈTRES MOT DE PASSE (MODAL) */
+        /* MODAL PIN */
         #settings-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 200;
@@ -192,17 +159,16 @@
 
         /* UI COURSES */
         .drive-links { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
-        .drive-links a { 
-            flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; 
-            color: white; font-weight: 700; font-size: 0.88em; min-width: 100px; 
-        }
+        .drive-links a { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; color: white; font-weight: 700; font-size: 0.88em; min-width: 100px; }
         .link-colruyt { background-color: #ea580c; }
         .link-intermarche { background-color: #1e293b; }
         .link-delhaize { background-color: #dc2626; }
 
-        .controls { display: flex; gap: 8px; margin-bottom: 18px; }
-        .controls input[type="text"] { flex: 3; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 15px; margin: 0; outline: none; }
-        .controls input[type="number"] { width: 70px; padding: 12px 8px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 15px; text-align: center; margin: 0; outline: none; }
+        .controls-box { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+        .controls-row { display: flex; gap: 8px; }
+        .controls-row input[type="text"] { flex: 3; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 15px; margin: 0; outline: none; }
+        .controls-row input[type="number"] { width: 70px; padding: 12px 8px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 15px; text-align: center; margin: 0; outline: none; }
+        .controls-row select { flex: 2; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; margin: 0; outline: none; background: white; }
         .btn-add { background-color: var(--accent); border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 15px; color: white; font-weight: 700; }
         
         .item-row { 
@@ -210,6 +176,7 @@
             background: white; margin-bottom: 6px; border-radius: 8px; border: 1px solid #f1f5f9; box-shadow: var(--shadow-subtle); 
         }
         .item-row.checked { text-decoration: line-through; opacity: 0.5; background: #f8fafc; }
+        .item-category-tag { font-size: 0.75em; font-weight: 600; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
         .item-actions { display: flex; align-items: center; gap: 6px; }
         .item-row button { padding: 6px 12px; font-size: 13px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: 700; }
         .qty-inline { width: 44px; padding: 5px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-size: 14px; }
@@ -221,8 +188,8 @@
         .catalog-cat-card { background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px; }
         .catalog-cat-title { font-weight: 700; font-size: 0.98em; color: var(--primary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
 
-        /* UI Exercices & Jeux */
-        .exercise-item { background: #ffffff; border: 1px solid var(--border-light); border-left: 4px solid var(--school); padding: 14px; margin-bottom: 10px; border-radius: 8px; }
+        /* UI Exercices */
+        .exercise-item { background: #ffffff; border: 1px solid var(--border-light); border-left: 4px solid #d97706; padding: 14px; margin-bottom: 10px; border-radius: 8px; }
         .exercise-item input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; width: 130px; margin-left: 10px; outline: none; }
         .exercise-item.correct { border-left-color: #10b981; background: #ecfdf5; }
         .exercise-item.wrong { border-left-color: #ef4444; background: #fef2f2; }
@@ -230,6 +197,85 @@
         .btn-action { background-color: var(--kid-accent); color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 700; width: 100%; margin-top: 10px; }
         .btn-secondary { background-color: var(--accent); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 6px; width: 100%; }
         select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-light); box-sizing: border-box; margin-bottom: 12px; outline: none; background: white; font-size: 0.95em; }
+
+        /* --- STYLES RETRO JEUX (SNAKE NOKIA 3310 & REFLEXES) --- */
+        .nokia-screen {
+            background-color: #9cb190;
+            border: 12px solid #334155;
+            border-radius: 12px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px;
+            margin: 0 auto 15px auto;
+            max-width: 340px;
+        }
+        .nokia-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 900;
+            color: #2b3925;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #2b3925;
+            padding-bottom: 4px;
+        }
+        #snakeCanvas {
+            background-color: #879f79;
+            border: 2px solid #2b3925;
+            display: block;
+        }
+        .dpad-container {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(3, 60px);
+            gap: 6px;
+            justify-content: center;
+            margin: 10px auto;
+        }
+        .dpad-btn {
+            background: #e2e8f0;
+            border: 2px solid #94a3b8;
+            border-radius: 12px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #334155;
+            cursor: pointer;
+            box-shadow: 0 4px #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dpad-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px #cbd5e1;
+        }
+
+        /* Tape-taupe / Reflexe */
+        .tap-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 320px;
+            margin: 15px auto;
+        }
+        .tap-hole {
+            aspect-ratio: 1;
+            background: #f1f5f9;
+            border: 3px solid #cbd5e1;
+            border-radius: var(--radius-md);
+            font-size: 2.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s ease;
+        }
+        .tap-hole:active { transform: scale(0.95); }
 
         /* Sudoku, Mots Croisés, Échecs */
         .sudoku-board { display: grid; grid-template-columns: repeat(4, 48px); gap: 4px; justify-content: center; margin: 20px auto; }
@@ -265,7 +311,7 @@
         </div>
     </header>
 
-    <!-- 1. ÉCRAN SÉLECTION DU PROFIL (Refonte Pro) -->
+    <!-- 1. ÉCRAN SÉLECTION DU PROFIL -->
     <section id="login-screen">
         <h1 class="login-hero-title">Bienvenue</h1>
         <p class="login-hero-sub">Choisissez un profil pour continuer</p>
@@ -323,11 +369,11 @@
         <p id="pinError" style="color:#ef4444; font-weight:600; font-size:0.85em; margin-top:18px; display:none;">Code incorrect</p>
     </section>
 
-    <!-- 3. MODAL MODIFICATION DU CODE PIN -->
+    <!-- 3. MODAL PIN -->
     <div id="settings-modal">
         <div class="settings-card">
             <h3 style="margin-top:0; color:var(--primary);">Modifier le code PIN</h3>
-            <p style="color:var(--text-muted); font-size:0.85em;">Ce code est partagé entre Maman et Papa pour accéder à la gestion complète.</p>
+            <p style="color:var(--text-muted); font-size:0.85em;">Ce code est partagé entre Maman et Papa.</p>
             
             <label style="font-size:0.85em; font-weight:600; display:block; margin-bottom:4px;">Ancien code</label>
             <input type="password" id="oldPinInput" maxlength="4" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:12px; font-size:16px;">
@@ -351,7 +397,7 @@
         <div class="widget-grid" id="widgetGrid"></div>
     </main>
 
-    <!-- 5. APP COURSES (Liste unique + Catégories) -->
+    <!-- 5. APP COURSES (Auto-détection + Catégories) -->
     <section id="app-courses" class="app-view">
         <div class="drive-links">
             <a href="https://www.collectandgo.be/" target="_blank" class="link-colruyt">Collect&Go</a>
@@ -359,10 +405,27 @@
             <a href="https://www.delhaize.be/" target="_blank" class="link-delhaize">Delhaize</a>
         </div>
 
-        <div class="controls">
-            <input type="text" id="newItemInput" placeholder="Ajouter un article...">
-            <input type="number" id="newItemQty" value="1" min="1">
-            <button class="btn-add" onclick="addCustomItem()">Ajouter</button>
+        <div class="controls-box">
+            <div class="controls-row">
+                <input type="text" id="newItemInput" placeholder="Nom de l'article (ex: Pommes, Lait, Pellets...)">
+                <input type="number" id="newItemQty" value="1" min="1">
+            </div>
+            <div class="controls-row">
+                <select id="newItemCategorySelect">
+                    <option value="auto">✨ Détection automatique du rayon</option>
+                    <option value="🥤 Boissons">🥤 Boissons</option>
+                    <option value="🍎 Fruits & Légumes">🍎 Fruits & Légumes</option>
+                    <option value="🥐 Boulangerie & Céréales">🥐 Boulangerie & Céréales</option>
+                    <option value="🧀 Frais & Crèmerie">🧀 Frais & Crèmerie</option>
+                    <option value="🥩 Boucherie & Plats">🥩 Boucherie & Plats</option>
+                    <option value="🍪 Collations & Épicerie">🍪 Collations & Épicerie</option>
+                    <option value="🧼 Entretien & Maison">🧼 Entretien & Maison</option>
+                    <option value="🧴 Hygiène & Soins">🧴 Hygiène & Soins</option>
+                    <option value="👶 Bébé">👶 Bébé</option>
+                    <option value="🐱 Animaux">🐱 Animaux</option>
+                </select>
+                <button class="btn-add" onclick="addCustomItem()">Ajouter</button>
+            </div>
         </div>
 
         <div style="background:#f8fafc; border:1px solid var(--border-light); padding:16px; border-radius:var(--radius-md); margin-bottom:16px;">
@@ -417,26 +480,77 @@
         <div id="schoolFeedback" style="text-align:center; font-weight:700; font-size:1.1em; margin-top:12px;"></div>
     </section>
 
-    <!-- 7. APP JEUX -->
+    <!-- 7. APP JEUX (AVEC SNAKE NOKIA 3310 & TAPE-TAUPES) -->
     <section id="app-games" class="app-view">
         <select id="gameSubSelect" onchange="switchGameSubView()">
-            <option value="sudoku">Sudoku</option>
-            <option value="crosswords">Mots Croisés</option>
-            <option value="chess">Échecs : Coordonnées</option>
+            <option value="snake">🐍 Snake Nokia 3310 (Rétro)</option>
+            <option value="reflex">⚡ Réflexe & Taupes</option>
+            <option value="sudoku">🔢 Sudoku</option>
+            <option value="crosswords">📝 Mots Croisés</option>
+            <option value="chess">♟️ Échecs : Coordonnées</option>
         </select>
-        <div id="sub-sudoku">
-            <p style="text-align:center; color:var(--text-muted);">Complète la grille avec les chiffres 1 à 4 sans répétition.</p>
+
+        <!-- SNAKE NOKIA 3310 -->
+        <div id="sub-snake">
+            <div class="nokia-screen">
+                <div class="nokia-header">
+                    <span>NOKIA</span>
+                    <span>SCORE: <span id="snakeScore">0</span></span>
+                </div>
+                <canvas id="snakeCanvas" width="280" height="200"></canvas>
+            </div>
+            
+            <div style="text-align:center; margin-bottom:10px;">
+                <button class="btn-action" style="max-width:200px; padding:8px 12px;" onclick="startSnakeGame()">▶ Démarrer / Rejouer</button>
+            </div>
+
+            <!-- Manette D-PAD Tactile -->
+            <div class="dpad-container">
+                <div></div>
+                <button class="dpad-btn" onclick="setSnakeDir('UP')">▲</button>
+                <div></div>
+                <button class="dpad-btn" onclick="setSnakeDir('LEFT')">◀</button>
+                <button class="dpad-btn" style="font-size:0.8em;" onclick="toggleSnakePause()">⏸</button>
+                <button class="dpad-btn" onclick="setSnakeDir('RIGHT')">▶</button>
+                <div></div>
+                <button class="dpad-btn" onclick="setSnakeDir('DOWN')">▼</button>
+                <div></div>
+            </div>
+        </div>
+
+        <!-- JEU DE REFLEXE / TAUPES -->
+        <div id="sub-reflex" style="display:none; text-align:center;">
+            <p style="color:var(--text-muted); font-size:0.9em;">Touche la cible 🐹 dès qu'elle apparaît pour marquer des points !</p>
+            <h3>Score : <span id="reflexScore" style="color:var(--accent);">0</span> | Temps : <span id="reflexTimer">20</span>s</h3>
+            <button class="btn-action" style="max-width:180px; margin-bottom:12px;" onclick="startReflexGame()">Lancer le jeu</button>
+            <div class="tap-grid">
+                <div class="tap-hole" id="hole-0" onclick="hitHole(0)">🕳️</div>
+                <div class="tap-hole" id="hole-1" onclick="hitHole(1)">🕳️</div>
+                <div class="tap-hole" id="hole-2" onclick="hitHole(2)">🕳️</div>
+                <div class="tap-hole" id="hole-3" onclick="hitHole(3)">🕳️</div>
+                <div class="tap-hole" id="hole-4" onclick="hitHole(4)">🕳️</div>
+                <div class="tap-hole" id="hole-5" onclick="hitHole(5)">🕳️</div>
+            </div>
+        </div>
+
+        <!-- SUDOKU -->
+        <div id="sub-sudoku" style="display:none;">
+            <p style="text-align:center; color:var(--text-muted);">Complète avec les chiffres 1 à 4 sans doublon.</p>
             <div id="sudokuGridContainer"></div>
             <button class="btn-action" onclick="checkSudoku()">Vérifier</button>
             <button class="btn-secondary" onclick="initSudoku()">Nouvelle grille</button>
             <div id="sudokuFeedback" style="text-align:center; font-weight:700; margin-top:10px;"></div>
         </div>
+
+        <!-- MOTS CROISES -->
         <div id="sub-crosswords" style="display:none;">
             <p style="font-size:0.9em; color:var(--text-muted);">1. Animal qui miaule (4 lettres) | 2. Astre du jour (6 lettres)</p>
             <div id="cwContainer"></div>
             <button class="btn-action" onclick="checkCrossword()">Vérifier les lettres</button>
             <div id="cwFeedback" style="text-align:center; font-weight:700; margin-top:10px;"></div>
         </div>
+
+        <!-- ECHECS -->
         <div id="sub-chess" style="display:none;">
             <p style="text-align:center; font-weight:700;">Trouve la case : <span id="targetSquare" style="color:var(--accent); font-size:1.3em;">--</span></p>
             <div class="chessboard" id="board"></div>
@@ -494,7 +608,6 @@
     const dbFirebase = firebase.database();
     dbFirebase.goOnline();
 
-    // Synchronisation du PIN depuis Firebase
     dbFirebase.ref('security/parentPin').on('value', snap => {
         const val = snap.val();
         if (val) {
@@ -568,6 +681,8 @@
     function logout() {
         currentUser = null;
         enteredPin = "";
+        clearInterval(snakeInterval);
+        clearInterval(reflexInterval);
         document.getElementById('login-screen').style.display = 'block';
         document.getElementById('pin-screen').style.display = 'none';
         document.getElementById('dashboard-screen').style.display = 'none';
@@ -578,7 +693,6 @@
         document.getElementById('headerTitle').innerText = "Espace Familial";
     }
 
-    // Modal PIN
     function openPinModal() {
         document.getElementById('oldPinInput').value = "";
         document.getElementById('newPinInput').value = "";
@@ -622,9 +736,9 @@
                 <div class="widget-icon">📝</div>
                 <div>Exercices<br><small style="opacity:0.85;">P1 à P6</small></div>
             </div>
-            <div class="widget-card bg-games" onclick="openApp('app-games', 'Jeux & Échecs')">
-                <div class="widget-icon">♟️</div>
-                <div>Jeux<br><small style="opacity:0.85;">Sudoku, Échecs</small></div>
+            <div class="widget-card bg-games" onclick="openApp('app-games', 'Jeux Rétro & Réflexion')">
+                <div class="widget-icon">🎮</div>
+                <div>Jeux Rétro<br><small style="opacity:0.85;">Snake, Taupe, Échecs</small></div>
             </div>
             <div class="widget-card bg-lang" onclick="openApp('app-lang', 'Langues')">
                 <div class="widget-icon">🌍</div>
@@ -655,30 +769,32 @@
     }
 
     function showDashboard() {
+        clearInterval(snakeInterval);
+        clearInterval(reflexInterval);
         document.getElementById('dashboard-screen').style.display = 'block';
         document.querySelectorAll('.app-view').forEach(el => el.style.display = 'none');
         document.getElementById('headerTitle').innerText = "Espace Familial";
         document.getElementById('backBtn').style.display = 'none';
     }
 
-    // --- COURSES UNIFIÉES & CATALOGUE COMPLET ---
+    // --- COURSES AVEC DÉTECTION AUTOMATIQUE OU MANUELLE ---
     const initialActiveList = [
-        { id: 1, name: "Pellets (Chauffage)", quantity: 6, checked: false },
-        { id: 2, name: "Barres céréales", quantity: 1, checked: false },
-        { id: 3, name: "Courgettes", quantity: 2, checked: false },
-        { id: 4, name: "Frites congelée", quantity: 1, checked: false },
-        { id: 5, name: "Lessive blanc", quantity: 1, checked: false },
-        { id: 6, name: "Mozza", quantity: 1, checked: false },
-        { id: 7, name: "Pommes", quantity: 1, checked: false },
-        { id: 8, name: "Pain tranches", quantity: 3, checked: false },
-        { id: 9, name: "Tomates pelées", quantity: 3, checked: false },
-        { id: 10, name: "Collations", quantity: 1, checked: false },
-        { id: 11, name: "Petits sacs poubelles", quantity: 1, checked: false },
-        { id: 12, name: "Andalouse", quantity: 1, checked: false },
-        { id: 13, name: "Biscuit patient", quantity: 1, checked: false }
+        { id: 1, name: "Pellets (Chauffage)", category: "🧼 Entretien & Maison", quantity: 6, checked: false },
+        { id: 2, name: "Barres céréales", category: "🥐 Boulangerie & Céréales", quantity: 1, checked: false },
+        { id: 3, name: "Courgettes", category: "🍎 Fruits & Légumes", quantity: 2, checked: false },
+        { id: 4, name: "Frites congelée", category: "🥩 Boucherie & Plats", quantity: 1, checked: false },
+        { id: 5, name: "Lessive blanc", category: "🧼 Entretien & Maison", quantity: 1, checked: false },
+        { id: 6, name: "Mozza", category: "🧀 Frais & Crèmerie", quantity: 1, checked: false },
+        { id: 7, name: "Pommes", category: "🍎 Fruits & Légumes", quantity: 1, checked: false },
+        { id: 8, name: "Pain tranches", category: "🥐 Boulangerie & Céréales", quantity: 3, checked: false },
+        { id: 9, name: "Tomates pelées", category: "🍎 Fruits & Légumes", quantity: 3, checked: false },
+        { id: 10, name: "Collations", category: "🍪 Collations & Épicerie", quantity: 1, checked: false },
+        { id: 11, name: "Petits sacs poubelles", category: "🧼 Entretien & Maison", quantity: 1, checked: false },
+        { id: 12, name: "Andalouse", category: "🍪 Collations & Épicerie", quantity: 1, checked: false },
+        { id: 13, name: "Biscuit patient", category: "🥐 Boulangerie & Céréales", quantity: 1, checked: false }
     ];
 
-    const categorizedCatalogData = {
+    let categorizedCatalogData = {
         "🥤 Boissons": [
             "Eau", "SPA Reine Eau", "Eau Minérale / Gazeuse", "Grd Perrier", "Petit perrier",
             "Pepsi", "Pepsi x3", "Cannettes", "Cecemel", "Sojas normal", "Boisson de Soja Vanille", "Vin"
@@ -714,13 +830,33 @@
 
     let currentCourses = [];
 
+    function detectCategory(articleName) {
+        const cleanName = articleName.toLowerCase().trim();
+        for (const [cat, items] of Object.entries(categorizedCatalogData)) {
+            for (const item of items) {
+                const cleanItem = item.toLowerCase();
+                if (cleanItem === cleanName || cleanName.includes(cleanItem) || cleanItem.includes(cleanName)) {
+                    return cat;
+                }
+            }
+        }
+        return "Divers";
+    }
+
     function initCourses() {
-        const local = localStorage.getItem('tribu_courses_v3');
+        const local = localStorage.getItem('tribu_courses_v4');
+        const localCatalog = localStorage.getItem('tribu_catalog_v4');
+
         if (local && JSON.parse(local).length > 0) {
             currentCourses = JSON.parse(local);
         } else {
             currentCourses = [...initialActiveList];
         }
+
+        if (localCatalog) {
+            categorizedCatalogData = JSON.parse(localCatalog);
+        }
+
         renderUnifiedCourses();
         renderCategorizedCatalog();
 
@@ -729,8 +865,13 @@
             if (data && data.list && data.list.length > 0) {
                 currentCourses = data.list;
             }
-            localStorage.setItem('tribu_courses_v3', JSON.stringify(currentCourses));
+            if (data && data.catalog) {
+                categorizedCatalogData = data.catalog;
+            }
+            localStorage.setItem('tribu_courses_v4', JSON.stringify(currentCourses));
+            localStorage.setItem('tribu_catalog_v4', JSON.stringify(categorizedCatalogData));
             renderUnifiedCourses();
+            renderCategorizedCatalog();
             document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
             document.getElementById('syncStatus').style.color = "#059669";
         }, err => {
@@ -740,9 +881,15 @@
     }
 
     function pushToFirebase() {
-        localStorage.setItem('tribu_courses_v3', JSON.stringify(currentCourses));
+        localStorage.setItem('tribu_courses_v4', JSON.stringify(currentCourses));
+        localStorage.setItem('tribu_catalog_v4', JSON.stringify(categorizedCatalogData));
         renderUnifiedCourses();
-        dbFirebase.ref('coursesTribu').set({ list: currentCourses })
+        renderCategorizedCatalog();
+
+        dbFirebase.ref('coursesTribu').set({ 
+            list: currentCourses, 
+            catalog: categorizedCatalogData 
+        })
         .then(() => {
             document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
             document.getElementById('syncStatus').style.color = "#059669";
@@ -762,7 +909,10 @@
             const div = document.createElement('div');
             div.className = `item-row ${it.checked ? 'checked' : ''}`;
             div.innerHTML = `
-                <span style="font-weight:600;">${it.name}</span>
+                <div>
+                    <span style="font-weight:600;">${it.name}</span>
+                    <span class="item-category-tag">${it.category || 'Divers'}</span>
+                </div>
                 <div class="item-actions">
                     <input type="number" class="qty-inline" value="${it.quantity}" min="1" onchange="updateCourseQty(${it.id}, this.value)">
                     <button class="check-btn" onclick="toggleCourse(${it.id})">✓</button>
@@ -792,7 +942,7 @@
                 row.style.padding = "8px 0";
                 row.innerHTML = `
                     <span style="font-size:0.95em;">${name}</span>
-                    <button class="add-catalog-btn" onclick="addArticleFromCatalog('${name.replace(/'/g, "\\'")}')">+</button>
+                    <button class="add-catalog-btn" onclick="addArticleFromCatalog('${name.replace(/'/g, "\\'")}', '${category.replace(/'/g, "\\'")}')">+</button>
                 `;
                 card.appendChild(row);
             });
@@ -800,24 +950,59 @@
         }
     }
 
-    function addArticleFromCatalog(name) {
+    function addArticleFromCatalog(name, category) {
         const exist = currentCourses.find(i => i.name === name && !i.checked);
-        if (exist) exist.quantity += 1;
-        else currentCourses.push({ id: Date.now() + Math.random(), name: name, quantity: 1, checked: false });
+        if (exist) {
+            exist.quantity += 1;
+        } else {
+            currentCourses.push({ 
+                id: Date.now() + Math.random(), 
+                name: name, 
+                category: category, 
+                quantity: 1, 
+                checked: false 
+            });
+        }
         pushToFirebase();
     }
 
     function addCustomItem() {
         const inp = document.getElementById('newItemInput');
         const qtyInp = document.getElementById('newItemQty');
+        const catSelect = document.getElementById('newItemCategorySelect');
         const val = inp.value.trim();
         const qty = parseInt(qtyInp.value) || 1;
+
         if (val) {
             const formatted = val.charAt(0).toUpperCase() + val.slice(1);
+            let targetCategory = catSelect.value;
+
+            if (targetCategory === "auto") {
+                targetCategory = detectCategory(formatted);
+            }
+
+            if (targetCategory !== "Divers" && categorizedCatalogData[targetCategory]) {
+                if (!categorizedCatalogData[targetCategory].includes(formatted)) {
+                    categorizedCatalogData[targetCategory].push(formatted);
+                }
+            }
+
             const exist = currentCourses.find(i => i.name === formatted && !i.checked);
-            if (exist) exist.quantity += qty;
-            else currentCourses.push({ id: Date.now() + Math.random(), name: formatted, quantity: qty, checked: false });
-            inp.value = ""; qtyInp.value = "1";
+            if (exist) {
+                exist.quantity += qty;
+            } else {
+                currentCourses.push({ 
+                    id: Date.now() + Math.random(), 
+                    name: formatted, 
+                    category: targetCategory, 
+                    quantity: qty, 
+                    checked: false 
+                });
+            }
+
+            inp.value = ""; 
+            qtyInp.value = "1";
+            catSelect.value = "auto";
             pushToFirebase();
         }
     }
@@ -847,9 +1032,210 @@
         let items = currentCourses.filter(i => !i.checked);
         if (items.length === 0) return alert("Rien à acheter !");
         let text = "🛒 *Courses de la Tribu* :\n\n";
-        items.forEach(i => text += `• ${i.quantity}x ${i.name}\n`);
+        items.forEach(i => text += `• ${i.quantity}x ${i.name} [${i.category || 'Divers'}]\n`);
         if (navigator.share) navigator.share({ title: 'Courses Tribu', text: text });
         else { navigator.clipboard.writeText(text); alert("Liste copiée !"); }
+    }
+
+    // --- MODULE JEUX COMPLETS (SNAKE 3310, REFLEXES, ETC.) ---
+    function switchGameSubView() {
+        const val = document.getElementById('gameSubSelect').value;
+        clearInterval(snakeInterval);
+        clearInterval(reflexInterval);
+
+        document.getElementById('sub-snake').style.display = val === 'snake' ? 'block' : 'none';
+        document.getElementById('sub-reflex').style.display = val === 'reflex' ? 'block' : 'none';
+        document.getElementById('sub-sudoku').style.display = val === 'sudoku' ? 'block' : 'none';
+        document.getElementById('sub-crosswords').style.display = val === 'crosswords' ? 'block' : 'none';
+        document.getElementById('sub-chess').style.display = val === 'chess' ? 'block' : 'none';
+
+        if (val === 'snake') initSnakeEngine();
+        if (val === 'sudoku') initSudoku();
+        if (val === 'crosswords') initCrossword();
+        if (val === 'chess') { initBoard(); nextChessTarget(); }
+    }
+
+    // --- 1. MOTEUR NOKIA 3310 SNAKE ---
+    const sCanvas = document.getElementById('snakeCanvas');
+    const sCtx = sCanvas.getContext('2d');
+    const gridSize = 10;
+    let snake = [];
+    let food = { x: 0, y: 0 };
+    let snakeDir = 'RIGHT';
+    let nextSnakeDir = 'RIGHT';
+    let snakeScore = 0;
+    let snakeInterval = null;
+    let snakePaused = false;
+
+    function playBeep(freq = 600, duration = 0.05) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.value = freq;
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            gain.gain.value = 0.1;
+            osc.start();
+            osc.stop(ctx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    function initSnakeEngine() {
+        clearInterval(snakeInterval);
+        snake = [{ x: 50, y: 50 }, { x: 40, y: 50 }, { x: 30, y: 50 }];
+        snakeDir = 'RIGHT';
+        nextSnakeDir = 'RIGHT';
+        snakeScore = 0;
+        document.getElementById('snakeScore').innerText = snakeScore;
+        placeSnakeFood();
+        drawSnake();
+    }
+
+    function startSnakeGame() {
+        initSnakeEngine();
+        snakePaused = false;
+        clearInterval(snakeInterval);
+        snakeInterval = setInterval(updateSnake, 110);
+    }
+
+    function placeSnakeFood() {
+        food = {
+            x: Math.floor(Math.random() * (sCanvas.width / gridSize)) * gridSize,
+            y: Math.floor(Math.random() * (sCanvas.height / gridSize)) * gridSize
+        };
+    }
+
+    function setSnakeDir(dir) {
+        if (dir === 'UP' && snakeDir !== 'DOWN') nextSnakeDir = 'UP';
+        if (dir === 'DOWN' && snakeDir !== 'UP') nextSnakeDir = 'DOWN';
+        if (dir === 'LEFT' && snakeDir !== 'RIGHT') nextSnakeDir = 'LEFT';
+        if (dir === 'RIGHT' && snakeDir !== 'LEFT') nextSnakeDir = 'RIGHT';
+    }
+
+    function toggleSnakePause() {
+        snakePaused = !snakePaused;
+    }
+
+    function updateSnake() {
+        if (snakePaused) return;
+        snakeDir = nextSnakeDir;
+        let headX = snake[0].x;
+        let headY = snake[0].y;
+
+        if (snakeDir === 'UP') headY -= gridSize;
+        if (snakeDir === 'DOWN') headY += gridSize;
+        if (snakeDir === 'LEFT') headX -= gridSize;
+        if (snakeDir === 'RIGHT') headX += gridSize;
+
+        // Collision mur
+        if (headX < 0 || headX >= sCanvas.width || headY < 0 || headY >= sCanvas.height) {
+            playBeep(200, 0.3);
+            clearInterval(snakeInterval);
+            alert("Game Over ! Score final : " + snakeScore);
+            return;
+        }
+
+        // Collision corps
+        for (let i = 0; i < snake.length; i++) {
+            if (headX === snake[i].x && headY === snake[i].y) {
+                playBeep(200, 0.3);
+                clearInterval(snakeInterval);
+                alert("Game Over ! Tu t'es mordu la queue ! Score : " + snakeScore);
+                return;
+            }
+        }
+
+        const newHead = { x: headX, y: headY };
+
+        // Manger
+        if (headX === food.x && headY === food.y) {
+            snakeScore += 10;
+            document.getElementById('snakeScore').innerText = snakeScore;
+            playBeep(850, 0.08);
+            placeSnakeFood();
+        } else {
+            snake.pop();
+        }
+
+        snake.unshift(newHead);
+        drawSnake();
+    }
+
+    function drawSnake() {
+        sCtx.fillStyle = "#879f79";
+        sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
+
+        // Pomme pixel Nokia
+        sCtx.fillStyle = "#2b3925";
+        sCtx.fillRect(food.x + 1, food.y + 1, gridSize - 2, gridSize - 2);
+
+        // Serpent pixel Nokia
+        snake.forEach((part, idx) => {
+            sCtx.fillStyle = "#2b3925";
+            sCtx.fillRect(part.x + 1, part.y + 1, gridSize - 2, gridSize - 2);
+            // Petit détail œil sur la tête
+            if (idx === 0) {
+                sCtx.fillStyle = "#879f79";
+                sCtx.fillRect(part.x + 3, part.y + 3, 2, 2);
+            }
+        });
+    }
+
+    // Contrôles clavier flèches sur PC
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp') setSnakeDir('UP');
+        if (e.key === 'ArrowDown') setSnakeDir('DOWN');
+        if (e.key === 'ArrowLeft') setSnakeDir('LEFT');
+        if (e.key === 'ArrowRight') setSnakeDir('RIGHT');
+    });
+
+    // --- 2. JEU DE REFLEXES (TAPE-TAUPES) ---
+    let reflexScore = 0;
+    let reflexTime = 20;
+    let reflexInterval = null;
+    let moleHole = -1;
+
+    function startReflexGame() {
+        reflexScore = 0;
+        reflexTime = 20;
+        document.getElementById('reflexScore').innerText = reflexScore;
+        document.getElementById('reflexTimer').innerText = reflexTime;
+        clearInterval(reflexInterval);
+
+        reflexInterval = setInterval(() => {
+            reflexTime--;
+            document.getElementById('reflexTimer').innerText = reflexTime;
+            moveMole();
+            if (reflexTime <= 0) {
+                clearInterval(reflexInterval);
+                clearHoles();
+                alert("Temps écoulé ! Score : " + reflexScore + " taupes attrapées ! 🏆");
+            }
+        }, 850);
+    }
+
+    function clearHoles() {
+        for (let i = 0; i < 6; i++) {
+            document.getElementById(`hole-${i}`).innerText = "🕳️";
+        }
+    }
+
+    function moveMole() {
+        clearHoles();
+        moleHole = Math.floor(Math.random() * 6);
+        document.getElementById(`hole-${moleHole}`).innerText = "🐹";
+    }
+
+    function hitHole(idx) {
+        if (idx === moleHole) {
+            reflexScore++;
+            document.getElementById('reflexScore').innerText = reflexScore;
+            playBeep(900, 0.05);
+            document.getElementById(`hole-${idx}`).innerText = "💥";
+            moleHole = -1;
+        }
     }
 
     // --- EXERCICES SCOLAIRES P1 À P6 ---
@@ -986,17 +1372,7 @@
         renderPrintQueue();
     }
 
-    // --- MODULE JEUX ---
-    function switchGameSubView() {
-        const val = document.getElementById('gameSubSelect').value;
-        document.getElementById('sub-sudoku').style.display = val === 'sudoku' ? 'block' : 'none';
-        document.getElementById('sub-crosswords').style.display = val === 'crosswords' ? 'block' : 'none';
-        document.getElementById('sub-chess').style.display = val === 'chess' ? 'block' : 'none';
-        if (val === 'sudoku') initSudoku();
-        if (val === 'crosswords') initCrossword();
-        if (val === 'chess') { initBoard(); nextChessTarget(); }
-    }
-
+    // --- SUDOKU, MOTS CROISÉS & ÉCHECS ---
     const sudokuSol = [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];
     function initSudoku() {
         const c = document.getElementById('sudokuGridContainer');
@@ -1021,7 +1397,7 @@
         let ok = true;
         for (let r = 0; r < 4; r++) {
             for (let c = 0; c < 4; c++) {
-                if (parseInt(document.getElementById(`sdk-${r}-${c}`).value) !== sudokuSol[r][c]) ok = false;
+                if (parseInt(document.getElementById(`sdk-${r}-${c}`).value) !== sudokuSol[r][col]) ok = false;
             }
         }
         const fb = document.getElementById('sudokuFeedback');
