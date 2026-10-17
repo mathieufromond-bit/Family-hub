@@ -93,7 +93,6 @@
         <button id="backBtn" onclick="showDashboard()">Retour</button>
     </div>
 
-    <!-- ÉCRAN DE CONNEXION -->
     <div id="login-screen">
         <h2>Qui est là ?</h2>
         <div class="profiles">
@@ -104,7 +103,6 @@
         </div>
     </div>
 
-    <!-- ÉCRAN CODE PIN -->
     <div id="pin-screen">
         <h2 id="pinTitle">Code secret pour </h2>
         <input type="password" id="pinInput" class="pin-input" maxlength="4" onkeyup="checkPin()">
@@ -112,13 +110,11 @@
         <button onclick="logout()" style="padding:10px; margin-top:20px; border:none; background:#ccc; border-radius:5px; cursor:pointer;">Annuler</button>
     </div>
 
-    <!-- TABLEAU DE BORD -->
     <div id="dashboard-screen">
         <div class="welcome-text">Bonjour <span id="userNameDisplay"></span> !</div>
         <div class="widget-grid" id="widgetGrid"></div>
     </div>
 
-    <!-- APP COURSES -->
     <div id="app-courses" class="app-view">
         <div style="text-align: center; font-style: italic; color: #666; margin-top: -10px; margin-bottom: 20px; font-size: 14px;">Organisation Hybride : Drive (Stock) + Magasin (Frais)</div>
 
@@ -165,40 +161,18 @@
     <!-- APP ÉCOLE -->
     <div id="app-school" class="app-view">
         <div class="form-group">
-            <select id="gradeSelect">
-                <option value="P1">1ère Primaire (P1)</option>
-                <option value="P2">2ème Primaire (P2)</option>
-                <option value="P3">3ème Primaire (P3)</option>
-                <option value="P4">4ème Primaire (P4)</option>
-            </select>
-            <select id="diffSelect">
-                <option value="1">🟢 Facile</option>
-                <option value="2">🟡 Moyen</option>
-                <option value="3">🔴 Difficile</option>
-            </select>
-            <select id="subjectSelect">
-                <option value="math">🧮 Mathématiques</option>
-                <option value="fr">📖 Français</option>
-                <option value="dictee">✍️ Dictée</option>
-                <option value="lecture">👁 Lecture</option>
-                <option value="cg">🌍 Culture Générale</option>
-            </select>
+            <select id="gradeSelect"><option value="P1">1ère Primaire (P1)</option><option value="P2">2ème Primaire (P2)</option></select>
+            <select id="diffSelect"><option value="1">🟢 Facile</option><option value="2">🟡 Moyen</option><option value="3">🔴 Difficile</option></select>
+            <select id="subjectSelect"><option value="math">🧮 Mathématiques</option><option value="fr">📖 Français</option></select>
             <button class="action-btn" onclick="generateExercise()">1. Générer l'exercice</button>
         </div>
-        <div id="exerciseContainer">
-            <div class="exercise-box" id="exerciseOutput">Sélectionnez une matière et générez !</div>
-        </div>
+        <div id="exerciseContainer"><div class="exercise-box" id="exerciseOutput">Sélectionnez une matière et générez !</div></div>
         <button class="action-btn" onclick="saveScore('Exercice terminé')" style="background:#3498db; margin-top:10px; display:none;" id="btnFinished">✅ J'ai fini ! (Envoyer à Papa/Maman)</button>
     </div>
 
     <!-- APP LANGUES -->
     <div id="app-lang" class="app-view">
-        <h3>Néerlandais (Flashcards)</h3>
-        <select id="nlCategory" style="width:100%; padding:10px;" onchange="nextNlWord()">
-            <option value="colors">Couleurs</option>
-            <option value="animals">Animaux</option>
-            <option value="numbers">Nombres</option>
-        </select>
+        <select id="nlCategory" style="width:100%; padding:10px;" onchange="nextNlWord()"><option value="colors">Couleurs</option><option value="animals">Animaux</option></select>
         <div class="flashcard" id="nlCard" onclick="flipCard()">Cliquez ici</div>
         <button class="action-btn" onclick="nextNlWord()" style="margin-top:10px;">Mot suivant ➔</button>
         <button class="action-btn" onclick="saveScore('A révisé le Néerlandais')" style="background:#3498db; margin-top:10px;">✅ J'ai fini ma révision !</button>
@@ -215,12 +189,8 @@
 </div>
 
 <script>
-    // =========================================================================
-    // 1. CONFIGURATION 
-    // =========================================================================
     const PARENT_PIN = "1234";
-    let currentUser = null;
-    let isCurrentParent = false;
+    let currentUser = null; let isCurrentParent = false;
 
     const firebaseConfig = {
         apiKey: "AIzaSyAcwjPfC_ObEaW9PsoWLhCmMFaMoCqSKXU",
@@ -234,9 +204,6 @@
     firebase.initializeApp(firebaseConfig);
     const dbFirebase = firebase.database(); 
 
-    // =========================================================================
-    // 2. LOGIQUE DE CONNEXION 
-    // =========================================================================
     function selectUser(name, isParent) {
         currentUser = name; isCurrentParent = isParent;
         document.getElementById('login-screen').style.display = 'none';
@@ -250,11 +217,8 @@
     function checkPin() {
         const input = document.getElementById('pinInput').value;
         if (input.length === 4) {
-            if (input === PARENT_PIN) {
-                document.getElementById('pinError').style.display = 'none'; loginSuccess();
-            } else {
-                document.getElementById('pinError').style.display = 'block'; document.getElementById('pinInput').value = "";
-            }
+            if (input === PARENT_PIN) { document.getElementById('pinError').style.display = 'none'; loginSuccess(); } 
+            else { document.getElementById('pinError').style.display = 'block'; document.getElementById('pinInput').value = ""; }
         }
     }
 
@@ -264,9 +228,7 @@
         document.getElementById('logoutBtn').style.display = 'block';
         document.getElementById('userNameDisplay').innerText = currentUser;
         document.getElementById('btnFinished').style.display = isCurrentParent ? 'none' : 'block';
-        
-        buildDashboard();
-        initCourses();
+        buildDashboard(); initCourses();
     }
 
     function logout() {
@@ -282,8 +244,7 @@
 
     function buildDashboard() {
         const grid = document.getElementById('widgetGrid');
-        grid.innerHTML = "";
-        grid.innerHTML += `
+        grid.innerHTML = `
             <button class="widget bg-school" onclick="openApp('app-school', '📚 Exercices')"><div class="icon">📝</div><div>Exercices</div></button>
             <button class="widget bg-lang" onclick="openApp('app-lang', '🌍 Langues')"><div class="icon">🇬🇧🇳🇱</div><div>Langues</div></button>
             <button class="widget bg-chess" onclick="openApp('app-chess', '♟️ Échecs')"><div class="icon">♟️</div><div>Échecs</div></button>
@@ -310,36 +271,17 @@
         document.getElementById('backBtn').style.display = 'none';
     }
 
-    // =========================================================================
-    // 3. LOGIQUE FIREBASE : COURSES ET CATALOGUE COMPLET
-    // =========================================================================
     let currentList = [];
-    
-    // Le grand catalogue retranscrit avec tout votre historique
     const defaultCatalog = {
         "📦 Stock Garage / Maison (Drive)": {
             type: "drive",
-            items: [
-                "Pellets (Chauffage)", "Sel Adoucisseur", "SPA Reine Eau", "Eau Minérale / Gazeuse", 
-                "Pepsi x3", "Lait Suite Nutril.2", "Couches", "Lingettes BB Eau", "Papier WC", 
-                "Essuie-tout 3LG", "Lessive", "Litière Chat", "Croquettes Chat", "Vin", 
-                "Sojas normal", "Eau", "Pepsi", "Grd Perrier", "Petit perrier", "Cannettes"
-            ]
+            items: ["Cannettes", "Couches", "Croquettes Chat", "Eau", "Eau Minérale / Gazeuse", "Essuie-tout 3LG", "Grd Perrier", "Lait Suite Nutril.2", "Lessive", "Lingettes BB Eau", "Litière Chat", "Papier WC", "Pellets (Chauffage)", "Pepsi", "Pepsi x3", "Petit perrier", "SPA Reine Eau", "Sel Adoucisseur", "Sojas normal", "Vin"]
         },
         "🛒 Frais & Dépannage (Magasin)": {
             type: "magasin",
-            items: [
-                "Gouda en tranches", "Bananes", "Pommes", "Boisson de Soja Vanille", "Pain tranches", 
-                "Petit pot Clémentine", "Pain panini", "Mozza", "Fruits secs", "Barres céréales", 
-                "Café grain", "Adoucissant", "Produit wc", "Pain à cuir", "Salade", "Tomates", 
-                "Courgettes", "Lessive couleur", "Lessive blanc", "Salami milano", "Fromages sachets", 
-                "Parmesan", "Crème alpro", "Sauces tomates croque", "Cubes bouillon", "Miel", 
-                "Sauce sojas sucré", "Laque lidl", "Nouilles", "Jambon dégraissé", "Filet de York", 
-                "Oeufs Plein Air", "Tomates Snack", "Haché de poulet", "Pain / Baguette"
-            ]
+            items: ["Adoucissant", "Bananes", "Barres céréales", "Boisson de Soja Vanille", "Café grain", "Courgettes", "Crème alpro", "Cubes bouillon", "Filet de York", "Fromages sachets", "Fruits secs", "Gouda en tranches", "Haché de poulet", "Jambon dégraissé", "Laque lidl", "Lessive blanc", "Lessive couleur", "Miel", "Mozza", "Nouilles", "Oeufs Plein Air", "Pain / Baguette", "Pain panini", "Pain tranches", "Pain à cuir", "Parmesan", "Petit pot Clémentine", "Pommes", "Produit wc", "Salami milano", "Salade", "Sauce sojas sucré", "Sauces tomates croque", "Tomates", "Tomates Snack"]
         }
     };
-    
     let catalog = JSON.parse(JSON.stringify(defaultCatalog));
 
     function initCourses() {
@@ -347,35 +289,35 @@
         dbFirebase.ref('coursesTribu').on('value', (snapshot) => {
             const data = snapshot.val();
             currentList = (data && data.list) ? data.list : [];
-            
-            // FUSION INTELLIGENTE : on garde vos nouveaux articles Firebase + le grand catalogue par défaut
             let fbCatalog = (data && data.catalog) ? data.catalog : null;
             catalog = JSON.parse(JSON.stringify(defaultCatalog));
-            
             if(fbCatalog) {
-                if(fbCatalog["📦 Stock Garage / Maison (Drive)"]) {
-                    catalog["📦 Stock Garage / Maison (Drive)"].items = [...new Set([...catalog["📦 Stock Garage / Maison (Drive)"].items, ...fbCatalog["📦 Stock Garage / Maison (Drive)"].items])];
-                }
-                if(fbCatalog["🛒 Frais & Dépannage (Magasin)"]) {
-                    catalog["🛒 Frais & Dépannage (Magasin)"].items = [...new Set([...catalog["🛒 Frais & Dépannage (Magasin)"].items, ...fbCatalog["🛒 Frais & Dépannage (Magasin)"].items])];
-                }
+                if(fbCatalog["📦 Stock Garage / Maison (Drive)"]) catalog["📦 Stock Garage / Maison (Drive)"].items = [...new Set([...catalog["📦 Stock Garage / Maison (Drive)"].items, ...fbCatalog["📦 Stock Garage / Maison (Drive)"].items])];
+                if(fbCatalog["🛒 Frais & Dépannage (Magasin)"]) catalog["🛒 Frais & Dépannage (Magasin)"].items = [...new Set([...catalog["🛒 Frais & Dépannage (Magasin)"].items, ...fbCatalog["🛒 Frais & Dépannage (Magasin)"].items])];
             }
-
             document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
-            renderLists();
-            renderCatalog();
+            renderLists(); renderCatalog();
+        }, (error) => {
+            alert("Erreur de lecture : " + error.message);
         });
         
         document.getElementById("newItemInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault(); addCustomItem();
-            }
+            if (event.key === "Enter") { event.preventDefault(); addCustomItem(); }
         });
     }
 
     function pushToFirebase() {
         document.getElementById('syncStatus').innerText = "🔄 Synchronisation...";
-        dbFirebase.ref('coursesTribu').set({ list: currentList, catalog: catalog });
+        renderLists(); // Force l'affichage local immédiatement
+        
+        dbFirebase.ref('coursesTribu').set({ list: currentList, catalog: catalog })
+        .then(() => {
+            document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
+        })
+        .catch((error) => {
+            alert("❌ Erreur Firebase: L'écriture a été refusée. Avez-vous bien cliqué sur 'Publier' dans l'onglet Règles sur Firebase ?");
+            document.getElementById('syncStatus').innerText = "❌ Erreur de sauvegarde";
+        });
     }
 
     function renderCatalog() {
@@ -386,7 +328,6 @@
             const catDiv = document.createElement('div');
             const isDrive = data.type === 'drive';
             catDiv.innerHTML = `<div class="category-title ${isDrive ? 'category-drive' : ''}">${category}</div>`;
-            
             const sortedItems = [...new Set(data.items)].sort((a, b) => a.localeCompare(b));
             sortedItems.forEach(item => {
                 const itemDiv = document.createElement('div');
@@ -400,25 +341,18 @@
 
     function addItem(name, type, qty) {
         const existingItem = currentList.find(i => i.name === name && i.type === type && !i.checked);
-        if (existingItem) {
-            existingItem.quantity += parseInt(qty);
-        } else {
-            currentList.push({ id: Date.now() + Math.random(), name: name, type: type, quantity: parseInt(qty), checked: false });
-        }
+        if (existingItem) existingItem.quantity += parseInt(qty);
+        else currentList.push({ id: Date.now() + Math.random(), name: name, type: type, quantity: parseInt(qty), checked: false });
         
         const catKey = type === 'drive' ? "📦 Stock Garage / Maison (Drive)" : "🛒 Frais & Dépannage (Magasin)";
         if (!catalog[catKey].items.includes(name)) catalog[catKey].items.push(name);
-        
         pushToFirebase();
     }
 
     function addCustomItem() {
-        const input = document.getElementById('newItemInput');
-        const qtyInput = document.getElementById('newItemQty');
+        const input = document.getElementById('newItemInput'); const qtyInput = document.getElementById('newItemQty');
         const typeSelect = document.getElementById('itemType');
-        const value = input.value.trim();
-        const qty = parseInt(qtyInput.value) || 1;
-        
+        const value = input.value.trim(); const qty = parseInt(qtyInput.value) || 1;
         if (value) {
             addItem(value.charAt(0).toUpperCase() + value.slice(1), typeSelect.value, qty);
             input.value = ''; qtyInput.value = '1';
@@ -427,10 +361,7 @@
 
     function updateQuantity(id, newQty) {
         const item = currentList.find(i => i.id === id);
-        if(item) {
-            item.quantity = Math.max(1, parseInt(newQty) || 1);
-            pushToFirebase();
-        }
+        if(item) { item.quantity = Math.max(1, parseInt(newQty) || 1); pushToFirebase(); }
     }
 
     function toggleCheck(id) {
@@ -438,29 +369,16 @@
         if(item) { item.checked = !item.checked; pushToFirebase(); }
     }
 
-    function removeById(id) {
-        currentList = currentList.filter(item => item.id !== id); pushToFirebase();
-    }
-
-    function clearList() {
-        if(confirm("Vider entièrement la liste ?")) {
-            currentList = []; pushToFirebase();
-        }
-    }
+    function removeById(id) { currentList = currentList.filter(item => item.id !== id); pushToFirebase(); }
+    function clearList() { if(confirm("Vider entièrement la liste ?")) { currentList = []; pushToFirebase(); } }
 
     function renderLists() {
-        const containerDrive = document.getElementById('listDrive');
-        const containerMagasin = document.getElementById('listMagasin');
+        const containerDrive = document.getElementById('listDrive'); const containerMagasin = document.getElementById('listMagasin');
         containerDrive.innerHTML = ''; containerMagasin.innerHTML = '';
-        
         let countDrive = 0, countMagasin = 0;
 
         currentList.forEach((item) => {
-            if(!item.checked) {
-                if(item.type === 'drive') countDrive++;
-                else countMagasin++;
-            }
-            
+            if(!item.checked) { if(item.type === 'drive') countDrive++; else countMagasin++; }
             const itemDiv = document.createElement('div');
             itemDiv.className = `item ${item.checked ? 'checked' : ''}`;
             itemDiv.innerHTML = `
@@ -471,79 +389,47 @@
                     <button class="remove-btn" onclick="removeById(${item.id})">X</button>
                 </div>
             `;
-            
-            if(item.type === 'drive') containerDrive.appendChild(itemDiv);
-            else containerMagasin.appendChild(itemDiv);
+            if(item.type === 'drive') containerDrive.appendChild(itemDiv); else containerMagasin.appendChild(itemDiv);
         });
-
-        document.getElementById('countDrive').innerText = countDrive;
-        document.getElementById('countMagasin').innerText = countMagasin;
+        document.getElementById('countDrive').innerText = countDrive; document.getElementById('countMagasin').innerText = countMagasin;
     }
 
     function shareList() {
         let itemsDrive = currentList.filter(i => !i.checked && i.type === 'drive');
         let itemsMagasin = currentList.filter(i => !i.checked && i.type === 'magasin');
-        
         if (itemsDrive.length === 0 && itemsMagasin.length === 0) return alert("Rien à acheter !");
 
         let text = "🛒 *Courses de la Tribu* :\n\n";
-        
         if(itemsDrive.length > 0) {
             text += "📦 *COMMANDE DRIVE* :\n";
-            itemsDrive.forEach(i => text += "• " + i.quantity + "x " + i.name + "\n");
-            text += "\n";
+            itemsDrive.forEach(i => text += "• " + i.quantity + "x " + i.name + "\n"); text += "\n";
         }
-        
         if(itemsMagasin.length > 0) {
             text += "🛒 *EN MAGASIN (Frais)* :\n";
             itemsMagasin.forEach(i => text += "• " + i.quantity + "x " + i.name + "\n");
         }
 
-        if (navigator.share) {
-            navigator.share({ title: 'Courses', text: text }).catch(e => console.log(e));
-        } else {
-            navigator.clipboard.writeText(text);
-            alert("Liste copiée ! Vous pouvez maintenant la coller dans votre conversation Messenger.");
-        }
+        if (navigator.share) navigator.share({ title: 'Courses', text: text }).catch(e => console.log(e));
+        else { navigator.clipboard.writeText(text); alert("Liste copiée ! Vous pouvez maintenant la coller dans votre conversation Messenger."); }
     }
 
-    // =========================================================================
-    // 4. LOGIQUE FIREBASE : SAUVEGARDE DES SCORES
-    // =========================================================================
     function saveScore(activite) {
         if(isCurrentParent) return;
-        dbFirebase.ref('activites/' + currentUser).push({
-            date: new Date().toLocaleString(),
-            tache: activite
-        });
-        alert("Super ! Papa et Maman ont reçu ton travail. 🌟");
-        showDashboard();
+        dbFirebase.ref('activites/' + currentUser).push({ date: new Date().toLocaleString(), tache: activite });
+        alert("Super ! Papa et Maman ont reçu ton travail. 🌟"); showDashboard();
     }
 
-    // =========================================================================
-    // 5. LOGIQUE ÉCOLE 
-    // =========================================================================
     function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1) + min); }
-
     function generateExercise() {
-        const grade = document.getElementById('gradeSelect').value;
-        const subj = document.getElementById('subjectSelect').value;
+        const grade = document.getElementById('gradeSelect').value; const subj = document.getElementById('subjectSelect').value;
         const diff = document.getElementById('diffSelect').value;
         let html = `<strong>${subj.toUpperCase()} - ${grade} (Niv. ${diff})</strong><br><br>`;
-        
-        if(subj === 'math') {
-            for(let i = 1; i <= 5; i++) {
-                let n1=randomInt(1,10*diff), n2=randomInt(1,5*diff);
-                html += `${i}) ${n1} + ${n2} = ... <br><br>`;
-            }
-        } else {
-            html += "Réponds aux questions sur une feuille :<br><br>1) Question 1... <br>2) Question 2...";
-        }
-        document.getElementById('exerciseOutput').innerHTML = html;
-        document.getElementById('btnFinished').style.display = isCurrentParent ? 'none' : 'block';
+        if(subj === 'math') { for(let i = 1; i <= 5; i++) { let n1=randomInt(1,10*diff), n2=randomInt(1,5*diff); html += `${i}) ${n1} + ${n2} = ... <br><br>`; } } 
+        else { html += "Réponds aux questions sur une feuille :<br><br>1) Question 1... <br>2) Question 2..."; }
+        document.getElementById('exerciseOutput').innerHTML = html; document.getElementById('btnFinished').style.display = isCurrentParent ? 'none' : 'block';
     }
 
-    const nlDict = { colors: [{fr:"Rouge", nl:"Rood"}, {fr:"Bleu", nl:"Blauw"}], animals: [{fr:"Chien", nl:"Hond"}], numbers: [{fr:"Un (1)", nl:"Een"}] };
+    const nlDict = { colors: [{fr:"Rouge", nl:"Rood"}, {fr:"Bleu", nl:"Blauw"}], animals: [{fr:"Chien", nl:"Hond"}] };
     let currentNlWord = {}; let isShowingFr = true;
     function nextNlWord() { const arr = nlDict[document.getElementById('nlCategory').value]; currentNlWord = arr[randomInt(0, arr.length-1)]; isShowingFr = true; updateCard(); }
     function flipCard() { isShowingFr = !isShowingFr; updateCard(); }
