@@ -16,11 +16,9 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 800px; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
         
-        /* En-tête */
         .header { background-color: var(--primary); color: white; padding: 15px; text-align: center; font-size: 1.2em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .header button { background: none; border: 1px solid white; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; display: none; }
 
-        /* ÉCRAN DE CONNEXION */
         #login-screen { padding: 40px 20px; text-align: center; }
         .profiles { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px; }
         .profile-card { width: 120px; padding: 20px; border-radius: 15px; background: #fff; border: 2px solid #eee; cursor: pointer; transition: 0.3s; }
@@ -29,11 +27,9 @@
         .profile-card.kid { border-color: var(--kids-color); }
         .avatar { font-size: 3em; margin-bottom: 10px; }
 
-        /* PIN PAD */
         #pin-screen { display: none; text-align: center; padding: 40px 20px; }
         .pin-input { font-size: 2em; letter-spacing: 10px; margin: 20px 0; border: none; border-bottom: 2px solid var(--primary); width: 150px; text-align: center; outline: none; }
         
-        /* TABLEAU DE BORD */
         #dashboard-screen { display: none; padding: 20px; }
         .welcome-text { font-size: 1.5em; margin-bottom: 20px; color: var(--primary); }
         .widget-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
@@ -48,7 +44,7 @@
 
         .app-view { display: none; padding: 20px; }
 
-        /* --- STYLES COURSES (Importés de courses.html) --- */
+        /* --- STYLES COURSES --- */
         .drive-links { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .drive-links a { flex: 1; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; color: white; font-weight: bold; min-width: 120px; }
         .link-colruyt { background-color: #e26e00; }
@@ -59,7 +55,6 @@
         .controls input[type="text"] { flex: 2; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; min-width: 150px; }
         .controls input[type="number"].qty-input-main { flex: 0.5; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; min-width: 60px; text-align: center; }
         .controls select { padding: 10px; border-radius: 5px; border: 1px solid #ccc; flex: 1.5; min-width: 140px; }
-        
         .btn-add { background-color: #0050aa; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; color: white; flex: 1; min-width: 100px; }
         
         .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -221,7 +216,7 @@
 
 <script>
     // =========================================================================
-    // 1. CONFIGURATION (Firebase + Variables Globales)
+    // 1. CONFIGURATION 
     // =========================================================================
     const PARENT_PIN = "1234";
     let currentUser = null;
@@ -240,7 +235,7 @@
     const dbFirebase = firebase.database(); 
 
     // =========================================================================
-    // 2. LOGIQUE DE CONNEXION & NAVIGATION
+    // 2. LOGIQUE DE CONNEXION 
     // =========================================================================
     function selectUser(name, isParent) {
         currentUser = name; isCurrentParent = isParent;
@@ -268,7 +263,6 @@
         document.getElementById('dashboard-screen').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'block';
         document.getElementById('userNameDisplay').innerText = currentUser;
-        
         document.getElementById('btnFinished').style.display = isCurrentParent ? 'none' : 'block';
         
         buildDashboard();
@@ -317,28 +311,31 @@
     }
 
     // =========================================================================
-    // 3. LOGIQUE FIREBASE : COURSES ET CATALOGUE
+    // 3. LOGIQUE FIREBASE : COURSES ET CATALOGUE COMPLET
     // =========================================================================
     let currentList = [];
     
+    // Le grand catalogue retranscrit avec tout votre historique
     const defaultCatalog = {
         "📦 Stock Garage / Maison (Drive)": {
             type: "drive",
             items: [
-                "Pellets (Chauffage)", "Sel Adoucisseur", 
-                "SPA Reine Eau", "Eau Minérale / Gazeuse", "Pepsi x3", 
-                "Lait Suite Nutril.2", "Couches", "Lingettes BB Eau", 
-                "Papier WC", "Essuie-tout 3LG", "Lessive", 
-                "Litière Chat", "Croquettes Chat"
+                "Pellets (Chauffage)", "Sel Adoucisseur", "SPA Reine Eau", "Eau Minérale / Gazeuse", 
+                "Pepsi x3", "Lait Suite Nutril.2", "Couches", "Lingettes BB Eau", "Papier WC", 
+                "Essuie-tout 3LG", "Lessive", "Litière Chat", "Croquettes Chat", "Vin", 
+                "Sojas normal", "Eau", "Pepsi", "Grd Perrier", "Petit perrier", "Cannettes"
             ]
         },
         "🛒 Frais & Dépannage (Magasin)": {
             type: "magasin",
             items: [
-                "Pain / Baguette", "Gouda en tranches", "Jambon dégraissé", 
-                "Filet de York", "Oeufs Plein Air", "Tomates Snack", 
-                "Bananes", "Pommes", "Haché de poulet", 
-                "Boisson de Soja Vanille"
+                "Gouda en tranches", "Bananes", "Pommes", "Boisson de Soja Vanille", "Pain tranches", 
+                "Petit pot Clémentine", "Pain panini", "Mozza", "Fruits secs", "Barres céréales", 
+                "Café grain", "Adoucissant", "Produit wc", "Pain à cuir", "Salade", "Tomates", 
+                "Courgettes", "Lessive couleur", "Lessive blanc", "Salami milano", "Fromages sachets", 
+                "Parmesan", "Crème alpro", "Sauces tomates croque", "Cubes bouillon", "Miel", 
+                "Sauce sojas sucré", "Laque lidl", "Nouilles", "Jambon dégraissé", "Filet de York", 
+                "Oeufs Plein Air", "Tomates Snack", "Haché de poulet", "Pain / Baguette"
             ]
         }
     };
@@ -350,7 +347,20 @@
         dbFirebase.ref('coursesTribu').on('value', (snapshot) => {
             const data = snapshot.val();
             currentList = (data && data.list) ? data.list : [];
-            catalog = (data && data.catalog) ? data.catalog : defaultCatalog;
+            
+            // FUSION INTELLIGENTE : on garde vos nouveaux articles Firebase + le grand catalogue par défaut
+            let fbCatalog = (data && data.catalog) ? data.catalog : null;
+            catalog = JSON.parse(JSON.stringify(defaultCatalog));
+            
+            if(fbCatalog) {
+                if(fbCatalog["📦 Stock Garage / Maison (Drive)"]) {
+                    catalog["📦 Stock Garage / Maison (Drive)"].items = [...new Set([...catalog["📦 Stock Garage / Maison (Drive)"].items, ...fbCatalog["📦 Stock Garage / Maison (Drive)"].items])];
+                }
+                if(fbCatalog["🛒 Frais & Dépannage (Magasin)"]) {
+                    catalog["🛒 Frais & Dépannage (Magasin)"].items = [...new Set([...catalog["🛒 Frais & Dépannage (Magasin)"].items, ...fbCatalog["🛒 Frais & Dépannage (Magasin)"].items])];
+                }
+            }
+
             document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
             renderLists();
             renderCatalog();
@@ -396,7 +406,6 @@
             currentList.push({ id: Date.now() + Math.random(), name: name, type: type, quantity: parseInt(qty), checked: false });
         }
         
-        // Apprentissage de nouveaux mots pour le catalogue
         const catKey = type === 'drive' ? "📦 Stock Garage / Maison (Drive)" : "🛒 Frais & Dépannage (Magasin)";
         if (!catalog[catKey].items.includes(name)) catalog[catKey].items.push(name);
         
@@ -512,7 +521,7 @@
     }
 
     // =========================================================================
-    // 5. LOGIQUE ÉCOLE (Exercices, Néerlandais, Echecs)
+    // 5. LOGIQUE ÉCOLE 
     // =========================================================================
     function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1) + min); }
 
