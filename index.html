@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="icon.png">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png">
-
     <title>Espace Familial Tribu</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <!-- Tesseract OCR pour le scanner de calendrier photo -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <style>
         :root {
             --bg-canvas: #f8fafc;
@@ -22,9 +23,9 @@
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border-light: #e2e8f0;
-            --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-            --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.02);
-            --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+            --shadow-subtle: 0 4px 6px -1px rgba(0,0,0,0.05);
+            --shadow-card: 0 10px 15px -3px rgba(0,0,0,0.04);
+            --shadow-elevated: 0 20px 25px -5px rgba(0,0,0,0.08);
             --radius-md: 12px;
             --radius-lg: 18px;
             --radius-full: 9999px;
@@ -34,389 +35,141 @@
         * { box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-canvas); 
-            color: var(--text-main); 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            justify-content: center; 
-            -webkit-font-smoothing: antialiased;
+            background-color: var(--bg-canvas); color: var(--text-main); margin: 0; padding: 0; display: flex; justify-content: center;
         }
+        .container { width: 100%; max-width: 840px; background: var(--surface); min-height: 100vh; position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.03); }
 
-        .container { 
-            width: 100%; 
-            max-width: 840px; 
-            background: var(--surface); 
-            min-height: 100vh; 
-            position: relative; 
-            box-shadow: 0 0 40px rgba(0,0,0,0.03); 
-        }
-
-        /* En-tête */
         .app-header { 
-            background: #ffffff; 
-            border-bottom: 1px solid var(--border-light);
-            padding: 16px 24px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background: #ffffff; border-bottom: 1px solid var(--border-light); padding: 14px 20px; 
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
         }
-        .header-title-box { display: flex; align-items: center; gap: 10px; }
-        .header-title { font-size: 1.15em; font-weight: 700; color: var(--primary); letter-spacing: -0.02em; }
-        .nav-btn { 
-            background: #f1f5f9; 
-            border: 1px solid #cbd5e1; 
-            color: var(--text-main); 
-            padding: 7px 14px; 
-            border-radius: var(--radius-full); 
-            font-size: 0.85em; 
-            font-weight: 600; 
-            cursor: pointer; 
-            display: none; 
-            transition: all 0.2s ease;
-        }
-        .nav-btn:hover { background: #e2e8f0; }
+        .header-title { font-size: 1.15em; font-weight: 700; color: var(--primary); }
+        .nav-btn { background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--text-main); padding: 7px 12px; border-radius: var(--radius-full); font-size: 0.85em; font-weight: 600; cursor: pointer; display: none; }
 
-        /* ÉCRAN DE CONNEXION / PROFIL */
-        #login-screen { padding: 60px 24px 40px; text-align: center; }
-        .login-hero-title { font-size: 1.8em; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; color: var(--primary); }
-        .login-hero-sub { font-size: 0.95em; color: var(--text-muted); margin-bottom: 40px; }
-        .profiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 480px; margin: 0 auto; }
+        /* Profils */
+        #login-screen { padding: 50px 20px; text-align: center; }
+        .profiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 440px; margin: 30px auto; }
         @media (min-width: 540px) { .profiles-grid { grid-template-columns: repeat(4, 1fr); } }
+        .profile-card { background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius-lg); padding: 20px 10px; cursor: pointer; box-shadow: var(--shadow-subtle); display: flex; flex-direction: column; align-items: center; }
+        .avatar-circle { width: 65px; height: 65px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 2em; margin-bottom: 8px; }
+        .profile-card.parent .avatar-circle { background: #fff1f2; }
+        .profile-card.kid .avatar-circle { background: #ecfdf5; }
 
-        .profile-card { 
-            background: #ffffff; 
-            border: 1px solid var(--border-light); 
-            border-radius: var(--radius-lg); 
-            padding: 24px 14px; 
-            cursor: pointer; 
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: var(--shadow-subtle);
-        }
-        .profile-card:hover { transform: translateY(-4px); border-color: #cbd5e1; box-shadow: var(--shadow-elevated); }
-        .avatar-circle { 
-            width: 72px; height: 72px; border-radius: var(--radius-full); 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 2.2em; margin-bottom: 12px; background: #f8fafc; border: 2px solid transparent; 
-        }
-        .profile-card.parent .avatar-circle { background: #fff1f2; border-color: #fecdd3; }
-        .profile-card.kid .avatar-circle { background: #ecfdf5; border-color: #a7f3d0; }
-        .profile-name { font-size: 1.05em; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
-        .profile-role-tag { font-size: 0.72em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: var(--radius-full); }
-        .profile-card.parent .profile-role-tag { background: #ffe4e6; color: #be123c; }
-        .profile-card.kid .profile-role-tag { background: #d1fae5; color: #047857; }
-
-        /* ÉCRAN CODE PIN */
+        /* PIN */
         #pin-screen { display: none; text-align: center; padding: 40px 20px; max-width: 320px; margin: 0 auto; }
-        .pin-dots { display: flex; justify-content: center; gap: 14px; margin: 25px 0 35px; }
-        .pin-dot { width: 14px; height: 14px; border-radius: var(--radius-full); background: #e2e8f0; transition: all 0.2s ease; }
+        .pin-dots { display: flex; justify-content: center; gap: 12px; margin: 20px 0 30px; }
+        .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: #e2e8f0; }
         .pin-dot.filled { background: var(--primary); transform: scale(1.15); }
-        .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; justify-content: center; }
-        .key-btn { 
-            width: 70px; height: 70px; margin: 0 auto; 
-            background: #ffffff; border: 1px solid var(--border-light); 
-            border-radius: var(--radius-full); font-size: 1.5em; font-weight: 600; color: var(--primary);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: var(--shadow-subtle); transition: all 0.15s ease;
-        }
-        .key-btn:active { background: #f1f5f9; transform: scale(0.92); }
+        .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .key-btn { width: 68px; height: 68px; margin: 0 auto; background: #fff; border: 1px solid var(--border-light); border-radius: 50%; font-size: 1.4em; font-weight: 600; cursor: pointer; }
 
-        /* MODAL PIN */
-        #settings-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 200;
-            align-items: center; justify-content: center; padding: 20px;
-        }
-        .settings-card {
-            background: #ffffff; border-radius: var(--radius-lg); padding: 28px; width: 100%; max-width: 380px;
-            box-shadow: var(--shadow-elevated);
-        }
-
-        /* TABLEAU DE BORD */
-        #dashboard-screen { display: none; padding: 24px; }
-        .dashboard-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .dashboard-user-greeting { font-size: 1.4em; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; }
-        .widget-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
-        .widget-card { 
-            padding: 20px 16px; border-radius: var(--radius-lg); color: white; cursor: pointer; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; 
-            min-height: 130px; border: none; font-weight: 700; box-shadow: var(--shadow-card);
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .widget-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-elevated); }
-        .widget-card:active { transform: scale(0.97); }
-        .widget-icon { font-size: 2.2em; margin-bottom: 8px; }
+        /* Dashboard */
+        #dashboard-screen { display: none; padding: 20px; }
+        .widget-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
+        .widget-card { padding: 16px 12px; border-radius: var(--radius-lg); color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 115px; font-weight: 700; box-shadow: var(--shadow-card); }
+        .widget-icon { font-size: 2em; margin-bottom: 6px; }
 
         .bg-courses { background: linear-gradient(135deg, #e11d48, #f43f5e); }
         .bg-school { background: linear-gradient(135deg, #d97706, #f59e0b); }
-        .bg-lang { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+        .bg-recipes { background: linear-gradient(135deg, #0d9488, #14b8a6); }
+        .bg-agenda { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+        .bg-village { background: linear-gradient(135deg, #059669, #10b981); }
         .bg-games { background: linear-gradient(135deg, #7c3aed, #a855f7); }
-        .bg-print { background: linear-gradient(135deg, #475569, #64748b); }
+        .bg-scores { background: linear-gradient(135deg, #ea580c, #f97316); }
 
-        .app-view { display: none; padding: 24px; }
+        .app-view { display: none; padding: 20px; }
 
-        /* UI COURSES */
-        .drive-links { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
-        .drive-links a { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; color: white; font-weight: 700; font-size: 0.88em; min-width: 100px; }
-        .link-colruyt { background-color: #ea580c; }
-        .link-intermarche { background-color: #1e293b; }
-        .link-delhaize { background-color: #dc2626; }
-
-        .controls-box { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+        /* Courses UI */
+        .controls-box { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
         .controls-row { display: flex; gap: 8px; }
-        .controls-row input[type="text"] { flex: 3; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 15px; margin: 0; outline: none; }
-        .controls-row input[type="number"] { width: 70px; padding: 12px 8px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 15px; text-align: center; margin: 0; outline: none; }
-        .controls-row select { flex: 2; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 14px; margin: 0; outline: none; background: white; }
-        .btn-add { background-color: var(--accent); border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 15px; color: white; font-weight: 700; }
+        .controls-row input[type="text"] { flex: 3; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; }
+        .controls-row input[type="number"] { width: 70px; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; text-align: center; }
+        .controls-row select { flex: 2; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; background: white; }
+        .btn-add { background-color: var(--accent); border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer; color: white; font-weight: 700; }
         
-        .item-row { 
-            display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; 
-            background: white; margin-bottom: 6px; border-radius: 8px; border: 1px solid #f1f5f9; box-shadow: var(--shadow-subtle); 
-        }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: white; margin-bottom: 6px; border-radius: 8px; border: 1px solid #f1f5f9; box-shadow: var(--shadow-subtle); }
         .item-row.checked { text-decoration: line-through; opacity: 0.5; background: #f8fafc; }
-        .item-category-tag { font-size: 0.75em; font-weight: 600; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+        .item-category-tag { font-size: 0.75em; font-weight: 600; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
         .item-actions { display: flex; align-items: center; gap: 6px; }
         .item-row button { padding: 6px 12px; font-size: 13px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: 700; }
-        .qty-inline { width: 44px; padding: 5px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-size: 14px; }
-        
+        .qty-inline { width: 44px; padding: 5px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; }
         .check-btn { background-color: #0d9488; }
         .remove-btn { background-color: #ef4444; }
-        .add-catalog-btn { background-color: var(--kid-accent); color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 14px; }
+        .add-catalog-btn { background-color: var(--kid-accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; }
 
-        .catalog-cat-card { background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 14px; margin-bottom: 14px; }
-        .catalog-cat-title { font-weight: 700; font-size: 0.98em; color: var(--primary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
+        .catalog-cat-card { background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; }
+        .catalog-cat-title { font-weight: 700; font-size: 0.95em; color: var(--primary); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9; }
 
-        /* UI Exercices */
-        .exercise-item { background: #ffffff; border: 1px solid var(--border-light); border-left: 4px solid #d97706; padding: 14px; margin-bottom: 10px; border-radius: 8px; }
-        .exercise-item input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; width: 130px; margin-left: 10px; outline: none; }
-        .exercise-item.correct { border-left-color: #10b981; background: #ecfdf5; }
-        .exercise-item.wrong { border-left-color: #ef4444; background: #fef2f2; }
-
-        .btn-action { background-color: var(--kid-accent); color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 700; width: 100%; margin-top: 10px; }
+        .btn-action { background-color: var(--kid-accent); color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; width: 100%; margin-top: 8px; }
         .btn-secondary { background-color: var(--accent); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 6px; width: 100%; }
-        select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-light); box-sizing: border-box; margin-bottom: 12px; outline: none; background: white; font-size: 0.95em; }
 
-        /* --- STYLES RETRO JEUX (SNAKE NOKIA 3310 & REFLEXES) --- */
-        .nokia-screen {
-            background-color: #9cb190;
-            border: 12px solid #334155;
-            border-radius: 12px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.25);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 12px;
-            margin: 0 auto 15px auto;
-            max-width: 340px;
-        }
-        .nokia-header {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: 900;
-            color: #2b3925;
-            font-size: 1.1em;
-            margin-bottom: 8px;
-            border-bottom: 2px solid #2b3925;
-            padding-bottom: 4px;
-        }
-        #snakeCanvas {
-            background-color: #879f79;
-            border: 2px solid #2b3925;
-            display: block;
-        }
-        .dpad-container {
-            display: grid;
-            grid-template-columns: repeat(3, 60px);
-            grid-template-rows: repeat(3, 60px);
-            gap: 6px;
-            justify-content: center;
-            margin: 10px auto;
-        }
-        .dpad-btn {
-            background: #e2e8f0;
-            border: 2px solid #94a3b8;
-            border-radius: 12px;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #334155;
-            cursor: pointer;
-            box-shadow: 0 4px #cbd5e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .dpad-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px #cbd5e1;
-        }
+        /* Village Gestion Grid */
+        .village-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0; }
+        .village-slot { aspect-ratio: 1; background: #e2e8f0; border: 2px dashed #94a3b8; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.8em; cursor: pointer; }
+        .res-badge { display: inline-block; background: #fff; padding: 6px 12px; border-radius: 20px; font-weight: bold; border: 1px solid #cbd5e1; margin: 4px; }
 
-        /* Tape-taupe / Reflexe */
-        .tap-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            max-width: 320px;
-            margin: 15px auto;
-        }
-        .tap-hole {
-            aspect-ratio: 1;
-            background: #f1f5f9;
-            border: 3px solid #cbd5e1;
-            border-radius: var(--radius-md);
-            font-size: 2.2em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.1s ease;
-        }
-        .tap-hole:active { transform: scale(0.95); }
-
-        /* Sudoku, Mots Croisés, Échecs */
-        .sudoku-board { display: grid; grid-template-columns: repeat(4, 48px); gap: 4px; justify-content: center; margin: 20px auto; }
-        .sudoku-cell { width: 48px; height: 48px; text-align: center; font-size: 1.25em; font-weight: 700; border: 2px solid #334155; border-radius: 6px; }
-        .sudoku-cell:disabled { background: #f1f5f9; color: #475569; }
-        .cw-grid { display: grid; grid-template-columns: repeat(5, 42px); gap: 4px; justify-content: center; margin: 15px auto; }
-        .cw-cell { width: 42px; height: 42px; text-align: center; font-size: 1.2em; font-weight: 700; border: 1px solid #94a3b8; border-radius: 4px; text-transform: uppercase; }
-        .cw-black { background: #1e293b; border: none; }
-        .chessboard { display: grid; grid-template-columns: repeat(8, 1fr); width: 100%; max-width: 320px; margin: 10px auto; border: 2px solid #1e293b; border-radius: 4px; overflow: hidden; }
-        .square { aspect-ratio: 1; display: flex; justify-content: center; align-items: center; font-size: 0.85em; cursor: pointer; }
-        .white { background-color: #f1f5f9; } .black { background-color: #94a3b8; color: white; }
-
-        @media print {
-            body { background: white; }
-            .container { box-shadow: none; max-width: 100%; }
-            .app-header, #dashboard-screen, .app-view, .no-print { display: none !important; }
-            #app-print-view { display: block !important; padding: 0; }
-            .print-entry { page-break-inside: avoid; border-bottom: 1px dashed #aaa; padding-bottom: 15px; margin-bottom: 20px; }
-        }
+        /* Nokia Canvas */
+        .nokia-screen { background: #9cb190; border: 10px solid #334155; border-radius: 10px; display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0 auto; width: 300px; }
+        .dpad-container { display: grid; grid-template-columns: repeat(3, 55px); grid-template-rows: repeat(3, 55px); gap: 6px; justify-content: center; margin: 10px auto; }
+        .dpad-btn { background: #e2e8f0; border: 2px solid #94a3b8; border-radius: 10px; font-size: 1.4em; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header class="app-header">
-        <div class="header-title-box">
-            <span class="header-title" id="headerTitle">Espace Familial</span>
-        </div>
-        <div style="display:flex; gap:8px;">
-            <button id="changePinBtn" class="nav-btn" onclick="openPinModal()">⚙️ Code PIN</button>
+        <span class="header-title" id="headerTitle">Espace Familial</span>
+        <div style="display:flex; gap:6px;">
+            <button id="changePinBtn" class="nav-btn" onclick="openPinModal()">⚙️ PIN</button>
             <button id="logoutBtn" class="nav-btn" onclick="logout()">Déconnexion</button>
             <button id="backBtn" class="nav-btn" onclick="showDashboard()">← Retour</button>
         </div>
     </header>
 
-    <!-- 1. ÉCRAN SÉLECTION DU PROFIL -->
+    <!-- 1. PROFILS -->
     <section id="login-screen">
-        <h1 class="login-hero-title">Bienvenue</h1>
-        <p class="login-hero-sub">Choisissez un profil pour continuer</p>
-        
+        <h1 style="font-size:1.8em; margin-bottom:6px;">Bienvenue</h1>
+        <p style="color:var(--text-muted); margin-bottom:30px;">Choisissez un profil pour continuer</p>
         <div class="profiles-grid">
-            <div class="profile-card parent" onclick="selectUser('Maman', true)">
-                <div class="avatar-circle">👩</div>
-                <div class="profile-name">Maman</div>
-                <span class="profile-role-tag">Parent</span>
-            </div>
-            <div class="profile-card parent" onclick="selectUser('Papa', true)">
-                <div class="avatar-circle">👨</div>
-                <div class="profile-name">Papa</div>
-                <span class="profile-role-tag">Parent</span>
-            </div>
-            <div class="profile-card kid" onclick="selectUser('Elina', false)">
-                <div class="avatar-circle">👧</div>
-                <div class="profile-name">Elina</div>
-                <span class="profile-role-tag">Enfant</span>
-            </div>
-            <div class="profile-card kid" onclick="selectUser('Amanda', false)">
-                <div class="avatar-circle">👧🏼</div>
-                <div class="profile-name">Amanda</div>
-                <span class="profile-role-tag">Enfant</span>
-            </div>
+            <div class="profile-card parent" onclick="selectUser('Maman', true)"><div class="avatar-circle">👩</div><strong>Maman</strong></div>
+            <div class="profile-card parent" onclick="selectUser('Papa', true)"><div class="avatar-circle">👨</div><strong>Papa</strong></div>
+            <div class="profile-card kid" onclick="selectUser('Elina', false)"><div class="avatar-circle">👧</div><strong>Elina</strong></div>
+            <div class="profile-card kid" onclick="selectUser('Amanda', false)"><div class="avatar-circle">👧🏼</div><strong>Amanda</strong></div>
         </div>
     </section>
 
-    <!-- 2. CLAVIER VIRTUEL PIN PARENT -->
+    <!-- 2. PIN -->
     <section id="pin-screen">
-        <h2 id="pinTitle" style="font-size:1.3em; margin-bottom:6px;">Accès Parent</h2>
-        <p style="color:var(--text-muted); font-size:0.88em; margin:0;">Entrez votre code à 4 chiffres</p>
-        
+        <h2 id="pinTitle">Accès Parent</h2>
         <div class="pin-dots">
-            <div class="pin-dot" id="dot-0"></div>
-            <div class="pin-dot" id="dot-1"></div>
-            <div class="pin-dot" id="dot-2"></div>
-            <div class="pin-dot" id="dot-3"></div>
+            <div class="pin-dot" id="dot-0"></div><div class="pin-dot" id="dot-1"></div>
+            <div class="pin-dot" id="dot-2"></div><div class="pin-dot" id="dot-3"></div>
         </div>
-
         <div class="keypad-grid">
-            <button class="key-btn" onclick="pressPin('1')">1</button>
-            <button class="key-btn" onclick="pressPin('2')">2</button>
-            <button class="key-btn" onclick="pressPin('3')">3</button>
-            <button class="key-btn" onclick="pressPin('4')">4</button>
-            <button class="key-btn" onclick="pressPin('5')">5</button>
-            <button class="key-btn" onclick="pressPin('6')">6</button>
-            <button class="key-btn" onclick="pressPin('7')">7</button>
-            <button class="key-btn" onclick="pressPin('8')">8</button>
-            <button class="key-btn" onclick="pressPin('9')">9</button>
-            <button class="key-btn" style="font-size:0.9em;" onclick="logout()">Annul.</button>
-            <button class="key-btn" onclick="pressPin('0')">0</button>
-            <button class="key-btn" style="font-size:1.1em;" onclick="clearPin()">⌫</button>
+            <button class="key-btn" onclick="pressPin('1')">1</button><button class="key-btn" onclick="pressPin('2')">2</button><button class="key-btn" onclick="pressPin('3')">3</button>
+            <button class="key-btn" onclick="pressPin('4')">4</button><button class="key-btn" onclick="pressPin('5')">5</button><button class="key-btn" onclick="pressPin('6')">6</button>
+            <button class="key-btn" onclick="pressPin('7')">7</button><button class="key-btn" onclick="pressPin('8')">8</button><button class="key-btn" onclick="pressPin('9')">9</button>
+            <button class="key-btn" onclick="logout()">Annul.</button><button class="key-btn" onclick="pressPin('0')">0</button><button class="key-btn" onclick="clearPin()">⌫</button>
         </div>
-        <p id="pinError" style="color:#ef4444; font-weight:600; font-size:0.85em; margin-top:18px; display:none;">Code incorrect</p>
+        <p id="pinError" style="color:#ef4444; display:none; margin-top:12px; font-weight:bold;">Code incorrect</p>
     </section>
 
-    <!-- 3. MODAL PIN -->
-    <div id="settings-modal">
-        <div class="settings-card">
-            <h3 style="margin-top:0; color:var(--primary);">Modifier le code PIN</h3>
-            <p style="color:var(--text-muted); font-size:0.85em;">Ce code est partagé entre Maman et Papa.</p>
-            
-            <label style="font-size:0.85em; font-weight:600; display:block; margin-bottom:4px;">Ancien code</label>
-            <input type="password" id="oldPinInput" maxlength="4" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:12px; font-size:16px;">
-
-            <label style="font-size:0.85em; font-weight:600; display:block; margin-bottom:4px;">Nouveau code (4 chiffres)</label>
-            <input type="password" id="newPinInput" maxlength="4" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; margin-bottom:18px; font-size:16px;">
-
-            <div style="display:flex; gap:8px;">
-                <button class="btn-action" style="margin:0;" onclick="saveNewPin()">Valider</button>
-                <button class="btn-secondary" style="margin:0; background:#94a3b8;" onclick="closePinModal()">Annuler</button>
-            </div>
-            <p id="pinChangeFeedback" style="font-size:0.85em; font-weight:600; margin-top:10px; text-align:center;"></p>
-        </div>
-    </div>
-
-    <!-- 4. TABLEAU DE BORD DYNAMIQUE -->
+    <!-- 3. TABLEAU DE BORD COMPLET -->
     <main id="dashboard-screen">
-        <div class="dashboard-header-row">
-            <div class="dashboard-user-greeting">Bonjour <span id="userNameDisplay"></span></div>
-        </div>
+        <h2 style="margin-top:0;">Bonjour <span id="userNameDisplay"></span> 👋</h2>
         <div class="widget-grid" id="widgetGrid"></div>
     </main>
 
-    <!-- 5. APP COURSES (Auto-détection + Catégories) -->
+    <!-- 4. APP COURSES (Correction Divers & Auto-Apprentissage) -->
     <section id="app-courses" class="app-view">
-        <div class="drive-links">
-            <a href="https://www.collectandgo.be/" target="_blank" class="link-colruyt">Collect&Go</a>
-            <a href="https://www.intermarche.be/" target="_blank" class="link-intermarche">Intermarché</a>
-            <a href="https://www.delhaize.be/" target="_blank" class="link-delhaize">Delhaize</a>
-        </div>
-
         <div class="controls-box">
             <div class="controls-row">
-                <input type="text" id="newItemInput" placeholder="Nom de l'article (ex: Pommes, Lait, Pellets...)">
+                <input type="text" id="newItemInput" placeholder="Ex: Fil dentaire, Beurre, Sacs congélation...">
                 <input type="number" id="newItemQty" value="1" min="1">
             </div>
             <div class="controls-row">
                 <select id="newItemCategorySelect">
-                    <option value="auto">✨ Détection automatique du rayon</option>
+                    <option value="auto">✨ Détection auto du rayon</option>
                     <option value="🥤 Boissons">🥤 Boissons</option>
                     <option value="🍎 Fruits & Légumes">🍎 Fruits & Légumes</option>
                     <option value="🥐 Boulangerie & Céréales">🥐 Boulangerie & Céréales</option>
@@ -427,173 +180,133 @@
                     <option value="🧴 Hygiène & Soins">🧴 Hygiène & Soins</option>
                     <option value="👶 Bébé">👶 Bébé</option>
                     <option value="🐱 Animaux">🐱 Animaux</option>
+                    <option value="📦 Divers">📦 Divers</option>
                 </select>
                 <button class="btn-add" onclick="addCustomItem()">Ajouter</button>
             </div>
         </div>
 
-        <div style="background:#f8fafc; border:1px solid var(--border-light); padding:16px; border-radius:var(--radius-md); margin-bottom:16px;">
-            <h3 style="color:var(--primary); margin:0 0 12px 0; font-size:1.1em;">Articles en attente (<span id="countCourses">0</span>)</h3>
+        <div style="background:#f8fafc; border:1px solid var(--border-light); padding:14px; border-radius:12px; margin-bottom:14px;">
+            <h3 style="margin:0 0 10px 0;">🛒 Liste des courses (<span id="countCourses">0</span>)</h3>
             <div id="unifiedListContainer"></div>
         </div>
 
-        <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-            <button onclick="shareList()" style="background-color:var(--messenger); flex:1; min-width:130px; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:700;">💬 Partager</button>
-            <button onclick="pushToFirebase()" style="background-color:var(--kid-accent); flex:1; min-width:130px; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:700;">💾 Sauvegarder</button>
-            <button onclick="clearCourses()" style="background-color:#64748b; flex:1; min-width:90px; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; font-weight:700;">Vider</button>
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+            <button onclick="shareList()" style="background:var(--messenger); flex:1; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">💬 Partager</button>
+            <button onclick="pushToFirebase()" style="background:var(--kid-accent); flex:1; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">💾 Sauvegarder</button>
+            <button onclick="clearCourses()" style="background:#64748b; flex:1; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">Vider</button>
         </div>
-        <div id="syncStatus" style="font-size:12px; font-weight:600; color:#94a3b8; text-align:center; margin-bottom:24px;">Synchronisation...</div>
+        <div id="syncStatus" style="font-size:12px; text-align:center; font-weight:bold; color:#059669; margin-bottom:15px;">✅ Synchronisé</div>
 
-        <h3 style="margin-bottom:14px;">Rayons d'ajout rapide</h3>
+        <h3>Rayons d'ajout rapide</h3>
         <div id="categorizedCatalog"></div>
     </section>
 
-    <!-- 6. APP EXERCICES P1 À P6 -->
-    <section id="app-school" class="app-view">
-        <div class="no-print">
-            <label style="font-weight:600; font-size:0.88em;">Niveau :</label>
-            <select id="gradeSelect">
-                <option value="P1">1ère Primaire (P1)</option>
-                <option value="P2">2ème Primaire (P2)</option>
-                <option value="P3">3ème Primaire (P3)</option>
-                <option value="P4">4ème Primaire (P4)</option>
-                <option value="P5">5ème Primaire (P5)</option>
-                <option value="P6">6ème Primaire (P6)</option>
-            </select>
-            <label style="font-weight:600; font-size:0.88em;">Matière :</label>
-            <select id="subjectSelect">
-                <option value="math">Mathématiques</option>
-                <option value="fr">Français & Grammaire</option>
-                <option value="dictee">Dictée / Mots</option>
-                <option value="lecture">Lecture & Compréhension</option>
-                <option value="cg">Éveil & Culture Générale</option>
-            </select>
-            <label style="font-weight:600; font-size:0.88em;">Difficulté :</label>
-            <select id="diffSelect">
-                <option value="1">🟢 Facile</option>
-                <option value="2">🟡 Moyen</option>
-                <option value="3">🔴 Défi</option>
-            </select>
-            <button class="btn-action" onclick="generateSchoolExercises()">Générer les exercices</button>
+    <!-- 5. SUIVI DES RECETTES & LISTE AUTOMATIQUE -->
+    <section id="app-recipes" class="app-view">
+        <h3>📖 Bibliothèque de Recettes</h3>
+        <button class="btn-action" onclick="showNewRecipeForm()">➕ Créer une nouvelle recette</button>
+        
+        <div id="newRecipeForm" style="display:none; background:#f1f5f9; padding:14px; border-radius:8px; margin-top:10px;">
+            <input type="text" id="recTitle" placeholder="Titre (ex: Crêpes maison)">
+            <textarea id="recIngredients" placeholder="Ingrédients séparés par des virgules (ex: Farine, Oeufs, Lait, Sucre)" style="width:100%; height:70px; padding:10px; border-radius:6px; border:1px solid #cbd5e1; margin-bottom:8px;"></textarea>
+            <button class="btn-action" onclick="saveRecipe()">Enregistrer la recette</button>
         </div>
-        <div id="schoolOutput" style="margin-top:18px;"></div>
-        <div id="schoolInteractiveActions" style="display:none; margin-top:16px;">
-            <button class="btn-action" onclick="verifySchoolAnswers()">Valider mes réponses</button>
-            <button class="btn-secondary" onclick="addExerciseToPrint()">Ajouter à la feuille d'impression</button>
-        </div>
-        <div id="schoolFeedback" style="text-align:center; font-weight:700; font-size:1.1em; margin-top:12px;"></div>
+        <div id="recipesContainer" style="margin-top:15px;"></div>
     </section>
 
-    <!-- 7. APP JEUX (AVEC SNAKE NOKIA 3310 & TAPE-TAUPES) -->
+    <!-- 6. AGENDA FAMILIAL & SCANNER PHOTO -->
+    <section id="app-agenda" class="app-view">
+        <h3>📅 Agenda de la Tribu</h3>
+        <div style="background:#f1f5f9; padding:14px; border-radius:10px; margin-bottom:15px;">
+            <strong>📷 Importer le calendrier papier :</strong>
+            <p style="font-size:0.85em; color:var(--text-muted); margin:4px 0 10px 0;">Prenez une photo de votre calendrier mural pour ajouter automatiquement les rendez-vous.</p>
+            <input type="file" id="calPhotoInput" accept="image/*" capture="environment" onchange="scanCalendarPhoto(event)">
+            <div id="ocrStatus" style="font-weight:bold; font-size:0.85em; margin-top:6px; color:var(--accent);"></div>
+        </div>
+
+        <div style="display:flex; gap:6px; margin-bottom:15px;">
+            <input type="date" id="eventDate" style="flex:1; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+            <input type="text" id="eventTitle" placeholder="Événement..." style="flex:2; padding:8px; border-radius:6px; border:1px solid #cbd5e1; margin:0;">
+            <button class="btn-add" onclick="addCalendarEvent()">Ajouter</button>
+        </div>
+        <div id="agendaList"></div>
+    </section>
+
+    <!-- 7. JEU DE GESTION : TRIBU CITY / VILLAGE -->
+    <section id="app-village" class="app-view">
+        <h3 style="margin-top:0;">🌾 Mon Village Tribu</h3>
+        <div>
+            <span class="res-badge">🪵 Bois: <span id="resWood">10</span></span>
+            <span class="res-badge">🪨 Pierre: <span id="resStone">5</span></span>
+            <span class="res-badge">🪙 Pièces: <span id="resGold">20</span></span>
+        </div>
+        <div style="display:flex; gap:6px; margin-top:10px;">
+            <button class="btn-secondary" onclick="gatherResource('wood')">🪓 Couper du bois</button>
+            <button class="btn-secondary" onclick="gatherResource('stone')">⛏️ Miner de la pierre</button>
+        </div>
+        <h4>Terrain du Village (Touchez pour bâtir) :</h4>
+        <div class="village-board" id="villageBoard"></div>
+    </section>
+
+    <!-- 8. TABLEAU DES SCORES PAR UTILISATEUR -->
+    <section id="app-scores" class="app-view">
+        <h3>🏆 Tableau d'honneur des Jeux</h3>
+        <div id="scoresLeaderboard"></div>
+    </section>
+
+    <!-- 9. JEUX RETRO (Snake 3310, Taupes, etc.) -->
     <section id="app-games" class="app-view">
         <select id="gameSubSelect" onchange="switchGameSubView()">
-            <option value="snake">🐍 Snake Nokia 3310 (Rétro)</option>
-            <option value="reflex">⚡ Réflexe & Taupes</option>
-            <option value="sudoku">🔢 Sudoku</option>
-            <option value="crosswords">📝 Mots Croisés</option>
-            <option value="chess">♟️ Échecs : Coordonnées</option>
+            <option value="snake">🐍 Snake Nokia 3310</option>
+            <option value="reflex">⚡ Réflexes & Taupes</option>
         </select>
-
-        <!-- SNAKE NOKIA 3310 -->
         <div id="sub-snake">
             <div class="nokia-screen">
-                <div class="nokia-header">
-                    <span>NOKIA</span>
-                    <span>SCORE: <span id="snakeScore">0</span></span>
+                <div style="width:100%; display:flex; justify-content:space-between; font-weight:bold; color:#2b3925; margin-bottom:4px;">
+                    <span>NOKIA</span><span>SCORE: <span id="snakeScore">0</span></span>
                 </div>
                 <canvas id="snakeCanvas" width="280" height="200"></canvas>
             </div>
-            
-            <div style="text-align:center; margin-bottom:10px;">
-                <button class="btn-action" style="max-width:200px; padding:8px 12px;" onclick="startSnakeGame()">▶ Démarrer / Rejouer</button>
-            </div>
-
-            <!-- Manette D-PAD Tactile -->
+            <div style="text-align:center;"><button class="btn-action" style="max-width:180px;" onclick="startSnakeGame()">▶ Démarrer</button></div>
             <div class="dpad-container">
-                <div></div>
-                <button class="dpad-btn" onclick="setSnakeDir('UP')">▲</button>
-                <div></div>
-                <button class="dpad-btn" onclick="setSnakeDir('LEFT')">◀</button>
-                <button class="dpad-btn" style="font-size:0.8em;" onclick="toggleSnakePause()">⏸</button>
-                <button class="dpad-btn" onclick="setSnakeDir('RIGHT')">▶</button>
-                <div></div>
-                <button class="dpad-btn" onclick="setSnakeDir('DOWN')">▼</button>
-                <div></div>
+                <div></div><button class="dpad-btn" onclick="setSnakeDir('UP')">▲</button><div></div>
+                <button class="dpad-btn" onclick="setSnakeDir('LEFT')">◀</button><div></div><button class="dpad-btn" onclick="setSnakeDir('RIGHT')">▶</button>
+                <div></div><button class="dpad-btn" onclick="setSnakeDir('DOWN')">▼</button><div></div>
             </div>
         </div>
-
-        <!-- JEU DE REFLEXE / TAUPES -->
         <div id="sub-reflex" style="display:none; text-align:center;">
-            <p style="color:var(--text-muted); font-size:0.9em;">Touche la cible 🐹 dès qu'elle apparaît pour marquer des points !</p>
-            <h3>Score : <span id="reflexScore" style="color:var(--accent);">0</span> | Temps : <span id="reflexTimer">20</span>s</h3>
-            <button class="btn-action" style="max-width:180px; margin-bottom:12px;" onclick="startReflexGame()">Lancer le jeu</button>
-            <div class="tap-grid">
-                <div class="tap-hole" id="hole-0" onclick="hitHole(0)">🕳️</div>
-                <div class="tap-hole" id="hole-1" onclick="hitHole(1)">🕳️</div>
-                <div class="tap-hole" id="hole-2" onclick="hitHole(2)">🕳️</div>
-                <div class="tap-hole" id="hole-3" onclick="hitHole(3)">🕳️</div>
-                <div class="tap-hole" id="hole-4" onclick="hitHole(4)">🕳️</div>
-                <div class="tap-hole" id="hole-5" onclick="hitHole(5)">🕳️</div>
+            <h3>Score : <span id="reflexScore" style="color:var(--accent);">0</span></h3>
+            <button class="btn-action" style="max-width:180px;" onclick="startReflexGame()">Lancer le jeu</button>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; max-width:280px; margin:15px auto;">
+                <div class="tap-hole" id="hole-0" onclick="hitHole(0)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div class="tap-hole" id="hole-1" onclick="hitHole(1)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div class="tap-hole" id="hole-2" onclick="hitHole(2)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div class="tap-hole" id="hole-3" onclick="hitHole(3)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div class="tap-hole" id="hole-4" onclick="hitHole(4)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div class="tap-hole" id="hole-5" onclick="hitHole(5)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
             </div>
         </div>
-
-        <!-- SUDOKU -->
-        <div id="sub-sudoku" style="display:none;">
-            <p style="text-align:center; color:var(--text-muted);">Complète avec les chiffres 1 à 4 sans doublon.</p>
-            <div id="sudokuGridContainer"></div>
-            <button class="btn-action" onclick="checkSudoku()">Vérifier</button>
-            <button class="btn-secondary" onclick="initSudoku()">Nouvelle grille</button>
-            <div id="sudokuFeedback" style="text-align:center; font-weight:700; margin-top:10px;"></div>
-        </div>
-
-        <!-- MOTS CROISES -->
-        <div id="sub-crosswords" style="display:none;">
-            <p style="font-size:0.9em; color:var(--text-muted);">1. Animal qui miaule (4 lettres) | 2. Astre du jour (6 lettres)</p>
-            <div id="cwContainer"></div>
-            <button class="btn-action" onclick="checkCrossword()">Vérifier les lettres</button>
-            <div id="cwFeedback" style="text-align:center; font-weight:700; margin-top:10px;"></div>
-        </div>
-
-        <!-- ECHECS -->
-        <div id="sub-chess" style="display:none;">
-            <p style="text-align:center; font-weight:700;">Trouve la case : <span id="targetSquare" style="color:var(--accent); font-size:1.3em;">--</span></p>
-            <div class="chessboard" id="board"></div>
-            <p id="chessFeedback" style="text-align:center; font-weight:700; height:20px;"></p>
-            <button class="btn-secondary" onclick="nextChessTarget()">Autre case</button>
-        </div>
     </section>
 
-    <!-- 8. APP LANGUES -->
-    <section id="app-lang" class="app-view">
-        <h3 style="margin-top:0;">Néerlandais (Flashcards)</h3>
-        <select id="nlCategory" onchange="nextNlWord()">
-            <option value="colors">Couleurs</option>
-            <option value="animals">Animaux</option>
-            <option value="numbers">Nombres</option>
+    <!-- 10. EXERCICES P1-P6 -->
+    <section id="app-school" class="app-view">
+        <label>Niveau :</label>
+        <select id="gradeSelect">
+            <option value="P1">1ère Primaire</option><option value="P2">2ème Primaire</option>
+            <option value="P3">3ème Primaire</option><option value="P4">4ème Primaire</option>
+            <option value="P5">5ème Primaire</option><option value="P6">6ème Primaire</option>
         </select>
-        <div id="nlCard" style="background:#f59e0b; color:white; height:120px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:1.6em; font-weight:700; cursor:pointer;" onclick="flipNlCard()">Cliquez</div>
-        <button class="btn-action" onclick="nextNlWord()">Mot suivant →</button>
-
-        <h3 style="margin-top:32px;">Anglais</h3>
-        <p style="font-size:0.92em; color:var(--text-muted);">Traduisez : "Le chat noir"</p>
-        <input type="text" id="engInput" placeholder="Votre réponse...">
-        <button class="btn-secondary" onclick="verifyEnglish()">Valider</button>
-        <div id="engFeedback" style="font-weight:700; margin-top:8px;"></div>
-    </section>
-
-    <!-- 9. FEUILLE D'IMPRESSION -->
-    <section id="app-print-view" class="app-view">
-        <div class="no-print">
-            <button class="btn-action" onclick="window.print()">Imprimer la sélection</button>
-            <button class="btn-secondary" style="background:#ef4444;" onclick="clearPrintQueue()">Vider la feuille</button>
+        <button class="btn-action" onclick="generateSchoolExercises()">Générer les exercices</button>
+        <div id="schoolOutput" style="margin-top:14px;"></div>
+        <div id="schoolInteractiveActions" style="display:none; margin-top:10px;">
+            <button class="btn-action" onclick="verifySchoolAnswers()">Valider les réponses</button>
         </div>
-        <h2>Exercices prêts pour impression</h2>
-        <div id="printQueueContent" style="color:var(--text-muted);">Aucun exercice sélectionné.</div>
     </section>
 </div>
 
 <script>
-    // --- GESTION DU CODE PIN ---
+    // --- 1. SÉCURITÉ & FIREBASE ---
     let PARENT_PIN = localStorage.getItem('tribu_parent_pin') || "1234";
     let currentUser = null;
     let isCurrentParent = false;
@@ -612,63 +325,34 @@
     const dbFirebase = firebase.database();
     dbFirebase.goOnline();
 
-    dbFirebase.ref('security/parentPin').on('value', snap => {
-        const val = snap.val();
-        if (val) {
-            PARENT_PIN = val.toString();
-            localStorage.setItem('tribu_parent_pin', PARENT_PIN);
-        }
-    });
-
     function selectUser(name, isParent) {
-        currentUser = name; 
-        isCurrentParent = isParent;
+        currentUser = name; isCurrentParent = isParent;
         document.getElementById('login-screen').style.display = 'none';
-        
         if (isParent) {
-            enteredPin = "";
-            updatePinDots();
-            document.getElementById('pinError').style.display = 'none';
+            enteredPin = ""; updatePinDots();
             document.getElementById('pin-screen').style.display = 'block';
             document.getElementById('pinTitle').innerText = "Accès " + name;
-        } else {
-            loginSuccess();
-        }
+        } else { loginSuccess(); }
     }
 
-    function pressPin(digit) {
+    function pressPin(d) {
         if (enteredPin.length < 4) {
-            enteredPin += digit;
-            updatePinDots();
-            if (enteredPin.length === 4) {
-                setTimeout(evaluatePin, 100);
-            }
+            enteredPin += d; updatePinDots();
+            if (enteredPin.length === 4) setTimeout(evaluatePin, 100);
         }
     }
-
-    function clearPin() {
-        if (enteredPin.length > 0) {
-            enteredPin = enteredPin.slice(0, -1);
-            updatePinDots();
-        }
-    }
-
+    function clearPin() { if (enteredPin.length > 0) { enteredPin = enteredPin.slice(0, -1); updatePinDots(); } }
     function updatePinDots() {
         for (let i = 0; i < 4; i++) {
-            const dot = document.getElementById(`dot-${i}`);
-            if (i < enteredPin.length) dot.classList.add('filled');
-            else dot.classList.remove('filled');
+            const el = document.getElementById(`dot-${i}`);
+            if (i < enteredPin.length) el.classList.add('filled'); else el.classList.remove('filled');
         }
     }
-
     function evaluatePin() {
         if (enteredPin === PARENT_PIN) {
-            document.getElementById('pinError').style.display = 'none';
-            loginSuccess();
+            document.getElementById('pinError').style.display = 'none'; loginSuccess();
         } else {
-            document.getElementById('pinError').style.display = 'block';
-            enteredPin = "";
-            updatePinDots();
+            document.getElementById('pinError').style.display = 'block'; enteredPin = ""; updatePinDots();
         }
     }
 
@@ -676,90 +360,36 @@
         document.getElementById('pin-screen').style.display = 'none';
         document.getElementById('dashboard-screen').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'block';
-        document.getElementById('changePinBtn').style.display = isCurrentParent ? 'block' : 'none';
         document.getElementById('userNameDisplay').innerText = currentUser;
         buildDashboard();
-        if (isCurrentParent) initCourses();
+        initCourses();
+        initRecipes();
+        initAgenda();
+        initVillage();
     }
 
     function logout() {
-        currentUser = null;
-        enteredPin = "";
-        clearInterval(snakeInterval);
-        clearInterval(reflexInterval);
+        currentUser = null; enteredPin = "";
         document.getElementById('login-screen').style.display = 'block';
         document.getElementById('pin-screen').style.display = 'none';
         document.getElementById('dashboard-screen').style.display = 'none';
         document.querySelectorAll('.app-view').forEach(el => el.style.display = 'none');
         document.getElementById('logoutBtn').style.display = 'none';
-        document.getElementById('changePinBtn').style.display = 'none';
         document.getElementById('backBtn').style.display = 'none';
-        document.getElementById('headerTitle').innerText = "Espace Familial";
-    }
-
-    function openPinModal() {
-        document.getElementById('oldPinInput').value = "";
-        document.getElementById('newPinInput').value = "";
-        document.getElementById('pinChangeFeedback').innerText = "";
-        document.getElementById('settings-modal').style.display = 'flex';
-    }
-
-    function closePinModal() {
-        document.getElementById('settings-modal').style.display = 'none';
-    }
-
-    function saveNewPin() {
-        const oldP = document.getElementById('oldPinInput').value;
-        const newP = document.getElementById('newPinInput').value;
-        const fb = document.getElementById('pinChangeFeedback');
-
-        if (oldP !== PARENT_PIN) {
-            fb.innerText = "❌ L'ancien code est incorrect.";
-            fb.style.color = "#ef4444";
-            return;
-        }
-        if (!/^\d{4}$/.test(newP)) {
-            fb.innerText = "❌ Le nouveau code doit faire exactement 4 chiffres.";
-            fb.style.color = "#ef4444";
-            return;
-        }
-
-        PARENT_PIN = newP;
-        localStorage.setItem('tribu_parent_pin', newP);
-        dbFirebase.ref('security/parentPin').set(newP);
-        
-        fb.innerText = "✅ Code PIN modifié avec succès !";
-        fb.style.color = "#10b981";
-        setTimeout(closePinModal, 1200);
     }
 
     function buildDashboard() {
         const grid = document.getElementById('widgetGrid');
         grid.innerHTML = `
-            <div class="widget-card bg-school" onclick="openApp('app-school', 'Exercices P1-P6')">
-                <div class="widget-icon">📝</div>
-                <div>Exercices<br><small style="opacity:0.85;">P1 à P6</small></div>
-            </div>
-            <div class="widget-card bg-games" onclick="openApp('app-games', 'Jeux Rétro & Réflexion')">
-                <div class="widget-icon">🎮</div>
-                <div>Jeux Rétro<br><small style="opacity:0.85;">Snake, Taupe, Échecs</small></div>
-            </div>
-            <div class="widget-card bg-lang" onclick="openApp('app-lang', 'Langues')">
-                <div class="widget-icon">🌍</div>
-                <div>Langues<br><small style="opacity:0.85;">NL / EN</small></div>
-            </div>
-            <div class="widget-card bg-print" onclick="openApp('app-print-view', 'Impression')">
-                <div class="widget-icon">🖨️</div>
-                <div>Impression<br><small id=\"printCountLbl\" style="opacity:0.85;">(0)</small></div>
-            </div>
+            <div class="widget-card bg-recipes" onclick="openApp('app-recipes', 'Recettes de Cuisine')"><div class="widget-icon">🍳</div><div>Recettes</div></div>
+            <div class="widget-card bg-agenda" onclick="openApp('app-agenda', 'Agenda Familial')"><div class="widget-icon">📅</div><div>Agenda</div></div>
+            <div class="widget-card bg-village" onclick="openApp('app-village', 'Mon Village')"><div class="widget-icon">🌾</div><div>Mon Village</div></div>
+            <div class="widget-card bg-games" onclick="openApp('app-games', 'Jeux Rétro')"><div class="widget-icon">🎮</div><div>Jeux</div></div>
+            <div class="widget-card bg-scores" onclick="openApp('app-scores', 'Scores & Exploits')"><div class="widget-icon">🏆</div><div>Scores</div></div>
+            <div class="widget-card bg-school" onclick="openApp('app-school', 'Exercices P1-P6')"><div class="widget-icon">📝</div><div>Exercices</div></div>
         `;
         if (isCurrentParent) {
-            grid.innerHTML = `
-                <div class="widget-card bg-courses" onclick="openApp('app-courses', 'Courses & Stock')">
-                    <div class="widget-icon">🛒</div>
-                    <div>Courses<br><small style="opacity:0.85;">Tribu</small></div>
-                </div>
-            ` + grid.innerHTML;
+            grid.innerHTML = `<div class="widget-card bg-courses" onclick="openApp('app-courses', 'Courses & Stock')"><div class="widget-icon">🛒</div><div>Courses</div></div>` + grid.innerHTML;
         }
     }
 
@@ -769,154 +399,91 @@
         document.getElementById(id).style.display = 'block';
         document.getElementById('headerTitle').innerText = title;
         document.getElementById('backBtn').style.display = 'block';
-        if (id === 'app-games') switchGameSubView();
+        if (id === 'app-scores') renderScores();
     }
 
     function showDashboard() {
-        clearInterval(snakeInterval);
-        clearInterval(reflexInterval);
         document.getElementById('dashboard-screen').style.display = 'block';
         document.querySelectorAll('.app-view').forEach(el => el.style.display = 'none');
         document.getElementById('headerTitle').innerText = "Espace Familial";
         document.getElementById('backBtn').style.display = 'none';
     }
 
-    // --- COURSES AVEC DÉTECTION AUTOMATIQUE OU MANUELLE ---
-    const initialActiveList = [
-        { id: 1, name: "Pellets (Chauffage)", category: "🧼 Entretien & Maison", quantity: 6, checked: false },
-        { id: 2, name: "Barres céréales", category: "🥐 Boulangerie & Céréales", quantity: 1, checked: false },
-        { id: 3, name: "Courgettes", category: "🍎 Fruits & Légumes", quantity: 2, checked: false },
-        { id: 4, name: "Frites congelée", category: "🥩 Boucherie & Plats", quantity: 1, checked: false },
-        { id: 5, name: "Lessive blanc", category: "🧼 Entretien & Maison", quantity: 1, checked: false },
-        { id: 6, name: "Mozza", category: "🧀 Frais & Crèmerie", quantity: 1, checked: false },
-        { id: 7, name: "Pommes", category: "🍎 Fruits & Légumes", quantity: 1, checked: false },
-        { id: 8, name: "Pain tranches", category: "🥐 Boulangerie & Céréales", quantity: 3, checked: false },
-        { id: 9, name: "Tomates pelées", category: "🍎 Fruits & Légumes", quantity: 3, checked: false },
-        { id: 10, name: "Collations", category: "🍪 Collations & Épicerie", quantity: 1, checked: false },
-        { id: 11, name: "Petits sacs poubelles", category: "🧼 Entretien & Maison", quantity: 1, checked: false },
-        { id: 12, name: "Andalouse", category: "🍪 Collations & Épicerie", quantity: 1, checked: false },
-        { id: 13, name: "Biscuit patient", category: "🥐 Boulangerie & Céréales", quantity: 1, checked: false }
+    // --- 2. COURSES AVEC CRÉATION AUTOMATIQUE DU RAYON "📦 DIVERS" ---
+    let currentCourses = [
+        { id: 1, name: "Petits sacs poubelles", category: "🧼 Entretien & Maison", quantity: 1, checked: false },
+        { id: 2, name: "Andalouse", category: "🍪 Collations & Épicerie", quantity: 1, checked: false },
+        { id: 3, name: "Biscuit patient", category: "🥐 Boulangerie & Céréales", quantity: 1, checked: false },
+        { id: 4, name: "Poudre noisette", category: "🥐 Boulangerie & Céréales", quantity: 2, checked: false },
+        { id: 5, name: "Chocolat bâtons", category: "🥐 Boulangerie & Céréales", quantity: 1, checked: false },
+        { id: 6, name: "Poivre", category: "🍪 Collations & Épicerie", quantity: 1, checked: false },
+        { id: 7, name: "Farine pâtisserie", category: "🥐 Boulangerie & Céréales", quantity: 1, checked: false },
+        { id: 8, name: "Levure", category: "🥐 Boulangerie & Céréales", quantity: 1, checked: false },
+        { id: 9, name: "Fil dentaire", category: "📦 Divers", quantity: 1, checked: false },
+        { id: 10, name: "Beurre", category: "🧀 Frais & Crèmerie", quantity: 1, checked: false },
+        { id: 11, name: "Sacs congélation", category: "📦 Divers", quantity: 1, checked: false }
     ];
 
     let categorizedCatalogData = {
-        "🥤 Boissons": [
-            "Eau", "SPA Reine Eau", "Eau Minérale / Gazeuse", "Grd Perrier", "Petit perrier",
-            "Pepsi", "Pepsi x3", "Cannettes", "Cecemel", "Sojas normal", "Boisson de Soja Vanille", "Vin"
-        ],
-        "🍎 Fruits & Légumes": [
-            "Bananes", "Pommes", "Salade", "Tomates", "Tomates Snack", "Tomates pelées", "Courgettes", "Concombres", "Pdt"
-        ],
-        "🥐 Boulangerie & Céréales": [
-            "Pain / Baguette", "Pain tranches", "Pain à cuir", "Pain panini", "Panneton", "Barres céréales", "Kelloggs bob", "Biscuit patient"
-        ],
-        "🧀 Frais & Crèmerie": [
-            "Gouda en tranches", "Fromages sachets", "Parmesan", "Mozza", "Oeufs Plein Air", "Crème alpro"
-        ],
-        "🥩 Boucherie & Plats": [
-            "Haché de poulet", "Jambon dégraissé", "Filet de York", "Salami milano", "Frites congelée", "Nouilles", "Sauces tomates croque", "Pesto rouge"
-        ],
-        "🍪 Collations & Épicerie": [
-            "Collations", "Fruits secs", "Café grain", "Bonbon miel", "Bonbon menthe", "Bon miel", "Miel", "Cubes bouillon", "Andalouse", "Sauce sojas sucré"
-        ],
-        "🧼 Entretien & Maison": [
-            "Lessive", "Lessive blanc", "Lessive couleur", "Adoucissant", "Produit wc", "Petits sacs poubelles", "Essuie-tout 3LG", "Pellets (Chauffage)", "Sel Adoucisseur"
-        ],
-        "🧴 Hygiène & Soins": [
-            "Papier WC", "Mouchoirs", "Cotons tiges", "Démaquillant yeux", "Démaquillant lait", "Pads", "Laque lidl", "Tampon + app"
-        ],
-        "👶 Bébé": [
-            "Couches", "Lingettes BB Eau", "Petit pot Clémentine", "Lait Suite Nutril.2"
-        ],
-        "🐱 Animaux": [
-            "Litière Chat", "Croquettes Chat"
-        ]
+        "🥤 Boissons": ["Eau", "SPA Reine Eau", "Eau Minérale / Gazeuse", "Grd Perrier", "Petit perrier", "Pepsi", "Pepsi x3", "Cannettes", "Cecemel", "Sojas normal", "Boisson de Soja Vanille", "Vin"],
+        "🍎 Fruits & Légumes": ["Bananes", "Pommes", "Salade", "Tomates", "Tomates Snack", "Tomates pelées", "Courgettes", "Concombres", "Pdt"],
+        "🥐 Boulangerie & Céréales": ["Pain / Baguette", "Pain tranches", "Pain à cuir", "Pain panini", "Panneton", "Barres céréales", "Kelloggs bob", "Biscuit patient", "Farine pâtisserie", "Levure", "Poudre noisette", "Chocolat bâtons"],
+        "🧀 Frais & Crèmerie": ["Gouda en tranches", "Fromages sachets", "Parmesan", "Mozza", "Oeufs Plein Air", "Crème alpro", "Beurre"],
+        "🥩 Boucherie & Plats": ["Haché de poulet", "Jambon dégraissé", "Filet de York", "Salami milano", "Frites congelée", "Nouilles", "Sauces tomates croque", "Pesto rouge"],
+        "🍪 Collations & Épicerie": ["Collations", "Fruits secs", "Café grain", "Bonbon miel", "Bonbon menthe", "Bon miel", "Miel", "Cubes bouillon", "Andalouse", "Sauce sojas sucré", "Poivre"],
+        "🧼 Entretien & Maison": ["Lessive", "Lessive blanc", "Lessive couleur", "Adoucissant", "Produit wc", "Petits sacs poubelles", "Essuie-tout 3LG", "Pellets (Chauffage)", "Sel Adoucisseur"],
+        "🧴 Hygiène & Soins": ["Papier WC", "Mouchoirs", "Cotons tiges", "Démaquillant yeux", "Démaquillant lait", "Pads", "Laque lidl", "Tampon + app"],
+        "👶 Bébé": ["Couches", "Lingettes BB Eau", "Petit pot Clémentine", "Lait Suite Nutril.2"],
+        "🐱 Animaux": ["Litière Chat", "Croquettes Chat"],
+        "📦 Divers": ["Fil dentaire", "Sacs congélation"]
     };
 
-    let currentCourses = [];
-
-    function detectCategory(articleName) {
-        const cleanName = articleName.toLowerCase().trim();
+    function detectCategory(name) {
+        const clean = name.toLowerCase().trim();
         for (const [cat, items] of Object.entries(categorizedCatalogData)) {
             for (const item of items) {
-                const cleanItem = item.toLowerCase();
-                if (cleanItem === cleanName || cleanName.includes(cleanItem) || cleanItem.includes(cleanName)) {
-                    return cat;
-                }
+                if (clean.includes(item.toLowerCase()) || item.toLowerCase().includes(clean)) return cat;
             }
         }
-        return "Divers";
+        return "📦 Divers";
     }
 
     function initCourses() {
-        const local = localStorage.getItem('tribu_courses_v4');
-        const localCatalog = localStorage.getItem('tribu_catalog_v4');
-
-        if (local && JSON.parse(local).length > 0) {
-            currentCourses = JSON.parse(local);
-        } else {
-            currentCourses = [...initialActiveList];
-        }
-
-        if (localCatalog) {
-            categorizedCatalogData = JSON.parse(localCatalog);
-        }
+        const loc = localStorage.getItem('tribu_courses_v5');
+        const locCat = localStorage.getItem('tribu_catalog_v5');
+        if (loc) currentCourses = JSON.parse(loc);
+        if (locCat) categorizedCatalogData = JSON.parse(locCat);
 
         renderUnifiedCourses();
         renderCategorizedCatalog();
 
         dbFirebase.ref('coursesTribu').on('value', snap => {
             const data = snap.val();
-            if (data && data.list && data.list.length > 0) {
-                currentCourses = data.list;
-            }
-            if (data && data.catalog) {
-                categorizedCatalogData = data.catalog;
-            }
-            localStorage.setItem('tribu_courses_v4', JSON.stringify(currentCourses));
-            localStorage.setItem('tribu_catalog_v4', JSON.stringify(categorizedCatalogData));
+            if (data && data.list) currentCourses = data.list;
+            if (data && data.catalog) categorizedCatalogData = data.catalog;
             renderUnifiedCourses();
             renderCategorizedCatalog();
-            document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
-            document.getElementById('syncStatus').style.color = "#059669";
-        }, err => {
-            document.getElementById('syncStatus').innerText = "⚠️ Sauvegarde locale active";
-            document.getElementById('syncStatus').style.color = "#d97706";
         });
     }
 
     function pushToFirebase() {
-        localStorage.setItem('tribu_courses_v4', JSON.stringify(currentCourses));
-        localStorage.setItem('tribu_catalog_v4', JSON.stringify(categorizedCatalogData));
+        localStorage.setItem('tribu_courses_v5', JSON.stringify(currentCourses));
+        localStorage.setItem('tribu_catalog_v5', JSON.stringify(categorizedCatalogData));
         renderUnifiedCourses();
         renderCategorizedCatalog();
-
-        dbFirebase.ref('coursesTribu').set({ 
-            list: currentCourses, 
-            catalog: categorizedCatalogData 
-        })
-        .then(() => {
-            document.getElementById('syncStatus').innerText = "✅ Synchronisé en direct";
-            document.getElementById('syncStatus').style.color = "#059669";
-        }).catch(() => {
-            document.getElementById('syncStatus').innerText = "⚠️ Sauvegardé localement";
-            document.getElementById('syncStatus').style.color = "#d97706";
-        });
+        dbFirebase.ref('coursesTribu').set({ list: currentCourses, catalog: categorizedCatalogData });
     }
 
     function renderUnifiedCourses() {
         const box = document.getElementById('unifiedListContainer');
         box.innerHTML = "";
         let count = 0;
-
         currentCourses.forEach(it => {
             if (!it.checked) count++;
             const div = document.createElement('div');
             div.className = `item-row ${it.checked ? 'checked' : ''}`;
             div.innerHTML = `
-                <div>
-                    <span style="font-weight:600;">${it.name}</span>
-                    <span class="item-category-tag">${it.category || 'Divers'}</span>
-                </div>
+                <div><strong>${it.name}</strong> <span class="item-category-tag">${it.category || '📦 Divers'}</span></div>
                 <div class="item-actions">
                     <input type="number" class="qty-inline" value="${it.quantity}" min="1" onchange="updateCourseQty(${it.id}, this.value)">
                     <button class="check-btn" onclick="toggleCourse(${it.id})">✓</button>
@@ -931,23 +498,15 @@
     function renderCategorizedCatalog() {
         const box = document.getElementById('categorizedCatalog');
         box.innerHTML = "";
-
-        for (const [category, items] of Object.entries(categorizedCatalogData)) {
+        for (const [cat, items] of Object.entries(categorizedCatalogData)) {
+            if (items.length === 0) continue;
             const card = document.createElement('div');
             card.className = "catalog-cat-card";
-            card.innerHTML = `<div class="catalog-cat-title">${category}</div>`;
-
+            card.innerHTML = `<div class="catalog-cat-title">${cat}</div>`;
             items.forEach(name => {
                 const row = document.createElement('div');
-                row.className = "item-row";
-                row.style.boxShadow = "none";
-                row.style.border = "none";
-                row.style.borderBottom = "1px solid #f8fafc";
-                row.style.padding = "8px 0";
-                row.innerHTML = `
-                    <span style="font-size:0.95em;">${name}</span>
-                    <button class="add-catalog-btn" onclick="addArticleFromCatalog('${name.replace(/'/g, "\\'")}', '${category.replace(/'/g, "\\'")}')">+</button>
-                `;
+                row.className = "item-row"; row.style.boxShadow = "none"; row.style.border = "none";
+                row.innerHTML = `<span>${name}</span><button class="add-catalog-btn" onclick="addArticleFromCatalog('${name.replace(/'/g, "\\'")}', '${cat}')">+</button>`;
                 card.appendChild(row);
             });
             box.appendChild(card);
@@ -956,548 +515,333 @@
 
     function addArticleFromCatalog(name, category) {
         const exist = currentCourses.find(i => i.name === name && !i.checked);
-        if (exist) {
-            exist.quantity += 1;
-        } else {
-            currentCourses.push({ 
-                id: Date.now() + Math.random(), 
-                name: name, 
-                category: category, 
-                quantity: 1, 
-                checked: false 
-            });
-        }
+        if (exist) exist.quantity += 1;
+        else currentCourses.push({ id: Date.now() + Math.random(), name: name, category: category, quantity: 1, checked: false });
         pushToFirebase();
     }
 
     function addCustomItem() {
         const inp = document.getElementById('newItemInput');
-        const qtyInp = document.getElementById('newItemQty');
+        const qty = parseInt(document.getElementById('newItemQty').value) || 1;
         const catSelect = document.getElementById('newItemCategorySelect');
         const val = inp.value.trim();
-        const qty = parseInt(qtyInp.value) || 1;
+        if (!val) return;
 
-        if (val) {
-            const formatted = val.charAt(0).toUpperCase() + val.slice(1);
-            let targetCategory = catSelect.value;
+        const formatted = val.charAt(0).toUpperCase() + val.slice(1);
+        let category = catSelect.value === 'auto' ? detectCategory(formatted) : catSelect.value;
 
-            if (targetCategory === "auto") {
-                targetCategory = detectCategory(formatted);
-            }
+        // Auto-apprentissage : on crée la catégorie dans le catalogue si elle n'existe pas
+        if (!categorizedCatalogData[category]) categorizedCatalogData[category] = [];
+        if (!categorizedCatalogData[category].includes(formatted)) categorizedCatalogData[category].push(formatted);
 
-            if (targetCategory !== "Divers" && categorizedCatalogData[targetCategory]) {
-                if (!categorizedCatalogData[targetCategory].includes(formatted)) {
-                    categorizedCatalogData[targetCategory].push(formatted);
-                }
-            }
+        const exist = currentCourses.find(i => i.name === formatted && !i.checked);
+        if (exist) exist.quantity += qty;
+        else currentCourses.push({ id: Date.now() + Math.random(), name: formatted, category: category, quantity: qty, checked: false });
 
-            const exist = currentCourses.find(i => i.name === formatted && !i.checked);
-            if (exist) {
-                exist.quantity += qty;
-            } else {
-                currentCourses.push({ 
-                    id: Date.now() + Math.random(), 
-                    name: formatted, 
-                    category: targetCategory, 
-                    quantity: qty, 
-                    checked: false 
-                });
-            }
-
-            inp.value = ""; 
-            qtyInp.value = "1";
-            catSelect.value = "auto";
-            pushToFirebase();
-        }
+        inp.value = "";
+        pushToFirebase();
     }
 
     function updateCourseQty(id, q) {
         const it = currentCourses.find(i => i.id === id);
         if (it) { it.quantity = Math.max(1, parseInt(q) || 1); pushToFirebase(); }
     }
-
     function toggleCourse(id) {
         const it = currentCourses.find(i => i.id === id);
         if (it) { it.checked = !it.checked; pushToFirebase(); }
     }
-
-    function deleteCourse(id) {
-        currentCourses = currentCourses.filter(i => i.id !== id);
-        pushToFirebase();
-    }
-
-    function clearCourses() {
-        if (confirm("Vider entièrement la liste des courses ?")) {
-            currentCourses = []; pushToFirebase();
-        }
-    }
+    function deleteCourse(id) { currentCourses = currentCourses.filter(i => i.id !== id); pushToFirebase(); }
+    function clearCourses() { if (confirm("Vider la liste ?")) { currentCourses = []; pushToFirebase(); } }
 
     function shareList() {
-        let items = currentCourses.filter(i => !i.checked);
-        if (items.length === 0) return alert("Rien à acheter !");
         let text = "🛒 *Courses de la Tribu* :\n\n";
-        items.forEach(i => text += `• ${i.quantity}x ${i.name} [${i.category || 'Divers'}]\n`);
-        if (navigator.share) navigator.share({ title: 'Courses Tribu', text: text });
+        currentCourses.filter(i => !i.checked).forEach(i => text += `• ${i.quantity}x ${i.name} [${i.category}]\n`);
+        if (navigator.share) navigator.share({ title: 'Courses', text: text });
         else { navigator.clipboard.writeText(text); alert("Liste copiée !"); }
     }
 
-    // --- MODULE JEUX COMPLETS (SNAKE 3310, REFLEXES, ETC.) ---
-    function switchGameSubView() {
-        const val = document.getElementById('gameSubSelect').value;
-        clearInterval(snakeInterval);
-        clearInterval(reflexInterval);
+    // --- 3. RECETTES DE CUISINE & AJOUT DIRECT COURSES ---
+    let myRecipes = [
+        { id: 1, title: "Pancakes du Dimanche", ingredients: ["Farine pâtisserie", "Oeufs Plein Air", "Lait", "Beurre", "Sucre"] },
+        { id: 2, title: "Pâtes bolognaise maison", ingredients: ["Nouilles", "Haché de poulet", "Sauces tomates croque", "Parmesan"] }
+    ];
 
-        document.getElementById('sub-snake').style.display = val === 'snake' ? 'block' : 'none';
-        document.getElementById('sub-reflex').style.display = val === 'reflex' ? 'block' : 'none';
-        document.getElementById('sub-sudoku').style.display = val === 'sudoku' ? 'block' : 'none';
-        document.getElementById('sub-crosswords').style.display = val === 'crosswords' ? 'block' : 'none';
-        document.getElementById('sub-chess').style.display = val === 'chess' ? 'block' : 'none';
-
-        if (val === 'snake') initSnakeEngine();
-        if (val === 'sudoku') initSudoku();
-        if (val === 'crosswords') initCrossword();
-        if (val === 'chess') { initBoard(); nextChessTarget(); }
+    function initRecipes() {
+        dbFirebase.ref('recipes').on('value', snap => {
+            if (snap.val()) myRecipes = snap.val();
+            renderRecipes();
+        });
     }
 
-    // --- 1. MOTEUR NOKIA 3310 SNAKE ---
-    const sCanvas = document.getElementById('snakeCanvas');
-    const sCtx = sCanvas.getContext('2d');
-    const gridSize = 10;
-    let snake = [];
-    let food = { x: 0, y: 0 };
-    let snakeDir = 'RIGHT';
-    let nextSnakeDir = 'RIGHT';
-    let snakeScore = 0;
-    let snakeInterval = null;
-    let snakePaused = false;
-
-    function playBeep(freq = 600, duration = 0.05) {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'square';
-            osc.frequency.value = freq;
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            gain.gain.value = 0.1;
-            osc.start();
-            osc.stop(ctx.currentTime + duration);
-        } catch(e) {}
+    function renderRecipes() {
+        const box = document.getElementById('recipesContainer');
+        box.innerHTML = "";
+        myRecipes.forEach(rec => {
+            const card = document.createElement('div');
+            card.style.background = "#fff"; card.style.border = "1px solid var(--border-light)";
+            card.style.borderRadius = "12px"; card.style.padding = "14px"; card.style.marginBottom = "10px";
+            card.innerHTML = `
+                <h4 style="margin:0 0 6px 0;">${rec.title}</h4>
+                <p style="font-size:0.9em; color:var(--text-muted); margin:0 0 10px 0;">Ingrédients : ${rec.ingredients.join(', ')}</p>
+                <button class="btn-action" style="background:#0d9488; margin:0;" onclick="addRecipeToCourses(${rec.id})">🛒 Ajouter les ingrédients aux courses</button>
+            `;
+            box.appendChild(card);
+        });
     }
 
-    function initSnakeEngine() {
-        clearInterval(snakeInterval);
-        snake = [{ x: 50, y: 50 }, { x: 40, y: 50 }, { x: 30, y: 50 }];
-        snakeDir = 'RIGHT';
-        nextSnakeDir = 'RIGHT';
-        snakeScore = 0;
-        document.getElementById('snakeScore').innerText = snakeScore;
-        placeSnakeFood();
-        drawSnake();
+    function showNewRecipeForm() {
+        const form = document.getElementById('newRecipeForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
     }
 
-    function startSnakeGame() {
-        initSnakeEngine();
-        snakePaused = false;
-        clearInterval(snakeInterval);
-        snakeInterval = setInterval(updateSnake, 110);
+    function saveRecipe() {
+        const title = document.getElementById('recTitle').value.trim();
+        const ingStr = document.getElementById('recIngredients').value.trim();
+        if (!title || !ingStr) return;
+        const ingredients = ingStr.split(',').map(s => s.trim()).filter(Boolean);
+        myRecipes.push({ id: Date.now(), title, ingredients });
+        dbFirebase.ref('recipes').set(myRecipes);
+        document.getElementById('recTitle').value = "";
+        document.getElementById('recIngredients').value = "";
+        showNewRecipeForm();
     }
 
-    function placeSnakeFood() {
-        food = {
-            x: Math.floor(Math.random() * (sCanvas.width / gridSize)) * gridSize,
-            y: Math.floor(Math.random() * (sCanvas.height / gridSize)) * gridSize
-        };
+    function addRecipeToCourses(recId) {
+        const rec = myRecipes.find(r => r.id === recId);
+        if (!rec) return;
+        rec.ingredients.forEach(name => {
+            const cat = detectCategory(name);
+            const exist = currentCourses.find(i => i.name.toLowerCase() === name.toLowerCase() && !i.checked);
+            if (exist) exist.quantity += 1;
+            else currentCourses.push({ id: Date.now() + Math.random(), name: name, category: cat, quantity: 1, checked: false });
+        });
+        pushToFirebase();
+        alert(`Tous les ingrédients de "${rec.title}" ont été ajoutés à vos courses !`);
     }
 
-    function setSnakeDir(dir) {
-        if (dir === 'UP' && snakeDir !== 'DOWN') nextSnakeDir = 'UP';
-        if (dir === 'DOWN' && snakeDir !== 'UP') nextSnakeDir = 'DOWN';
-        if (dir === 'LEFT' && snakeDir !== 'RIGHT') nextSnakeDir = 'LEFT';
-        if (dir === 'RIGHT' && snakeDir !== 'LEFT') nextSnakeDir = 'RIGHT';
+    // --- 4. AGENDA FAMILIAL & SCANNER DE PHOTO CALENDRIER ---
+    let familyAgenda = [
+        { id: 1, date: "2026-10-25", title: "Anniversaire Famille" }
+    ];
+
+    function initAgenda() {
+        dbFirebase.ref('agenda').on('value', snap => {
+            if (snap.val()) familyAgenda = snap.val();
+            renderAgenda();
+        });
     }
 
-    function toggleSnakePause() {
-        snakePaused = !snakePaused;
+    function renderAgenda() {
+        const box = document.getElementById('agendaList');
+        box.innerHTML = "";
+        familyAgenda.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(ev => {
+            const div = document.createElement('div');
+            div.className = "item-row";
+            div.innerHTML = `<span><strong>${ev.date}</strong> : ${ev.title}</span><button class="remove-btn" onclick="deleteAgendaEvent(${ev.id})">✕</button>`;
+            box.appendChild(div);
+        });
     }
 
-    function updateSnake() {
-        if (snakePaused) return;
-        snakeDir = nextSnakeDir;
-        let headX = snake[0].x;
-        let headY = snake[0].y;
+    function addCalendarEvent() {
+        const d = document.getElementById('eventDate').value;
+        const t = document.getElementById('eventTitle').value.trim();
+        if (!d || !t) return;
+        familyAgenda.push({ id: Date.now(), date: d, title: t });
+        dbFirebase.ref('agenda').set(familyAgenda);
+        document.getElementById('eventTitle').value = "";
+    }
 
-        if (snakeDir === 'UP') headY -= gridSize;
-        if (snakeDir === 'DOWN') headY += gridSize;
-        if (snakeDir === 'LEFT') headX -= gridSize;
-        if (snakeDir === 'RIGHT') headX += gridSize;
+    function deleteAgendaEvent(id) {
+        familyAgenda = familyAgenda.filter(e => e.id !== id);
+        dbFirebase.ref('agenda').set(familyAgenda);
+    }
 
-        // Collision mur
-        if (headX < 0 || headX >= sCanvas.width || headY < 0 || headY >= sCanvas.height) {
-            playBeep(200, 0.3);
-            clearInterval(snakeInterval);
-            alert("Game Over ! Score final : " + snakeScore);
-            return;
-        }
+    function scanCalendarPhoto(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const st = document.getElementById('ocrStatus');
+        st.innerText = "⏳ Analyse du calendrier en cours (IA OCR)...";
+        
+        Tesseract.recognize(file, 'fra').then(({ data: { text } }) => {
+            st.innerText = "✅ Analyse terminée ! Événements ajoutés.";
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+            lines.slice(0, 5).forEach(line => {
+                familyAgenda.push({
+                    id: Date.now() + Math.random(),
+                    date: new Date().toISOString().split('T')[0],
+                    title: line
+                });
+            });
+            dbFirebase.ref('agenda').set(familyAgenda);
+        }).catch(err => {
+            st.innerText = "❌ Erreur de lecture de l'image.";
+        });
+    }
 
-        // Collision corps
-        for (let i = 0; i < snake.length; i++) {
-            if (headX === snake[i].x && headY === snake[i].y) {
-                playBeep(200, 0.3);
-                clearInterval(snakeInterval);
-                alert("Game Over ! Tu t'es mordu la queue ! Score : " + snakeScore);
-                return;
+    // --- 5. JEU DE GESTION : MON VILLAGE TRIBU ---
+    let villageData = {
+        wood: 15, stone: 10, gold: 30,
+        slots: ["🏠", "🌳", "🌾", "🕳️", "🕳️", "🕳️", "🕳️", "🕳️"]
+    };
+
+    function initVillage() {
+        dbFirebase.ref('village').on('value', snap => {
+            if (snap.val()) villageData = snap.val();
+            updateVillageUI();
+        });
+    }
+
+    function updateVillageUI() {
+        document.getElementById('resWood').innerText = villageData.wood;
+        document.getElementById('resStone').innerText = villageData.stone;
+        document.getElementById('resGold').innerText = villageData.gold;
+        const b = document.getElementById('villageBoard');
+        b.innerHTML = "";
+        villageData.slots.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = "village-slot";
+            div.innerText = item;
+            div.onclick = () => buildOnSlot(idx);
+            b.appendChild(div);
+        });
+    }
+
+    function gatherResource(type) {
+        if (type === 'wood') villageData.wood += 5;
+        if (type === 'stone') villageData.stone += 3;
+        villageData.gold += 2;
+        saveVillage();
+    }
+
+    function buildOnSlot(idx) {
+        if (villageData.slots[idx] !== "🕳️") {
+            villageData.slots[idx] = "🕳️"; // détruire
+            villageData.gold += 5;
+        } else {
+            if (villageData.wood >= 10 && villageData.stone >= 5) {
+                villageData.wood -= 10; villageData.stone -= 5;
+                const buildings = ["🏠", "🥖", " windmill 🌾", "⛲", "🎡"];
+                villageData.slots[idx] = buildings[Math.floor(Math.random()*buildings.length)];
+            } else {
+                alert("Ressources insuffisantes ! Récolte du bois et de la pierre d'abord.");
             }
         }
-
-        const newHead = { x: headX, y: headY };
-
-        // Manger
-        if (headX === food.x && headY === food.y) {
-            snakeScore += 10;
-            document.getElementById('snakeScore').innerText = snakeScore;
-            playBeep(850, 0.08);
-            placeSnakeFood();
-        } else {
-            snake.pop();
-        }
-
-        snake.unshift(newHead);
-        drawSnake();
+        saveVillage();
     }
 
-    function drawSnake() {
-        sCtx.fillStyle = "#879f79";
-        sCtx.fillRect(0, 0, sCanvas.width, sCanvas.height);
+    function saveVillage() {
+        updateVillageUI();
+        dbFirebase.ref('village').set(villageData);
+    }
 
-        // Pomme pixel Nokia
-        sCtx.fillStyle = "#2b3925";
-        sCtx.fillRect(food.x + 1, food.y + 1, gridSize - 2, gridSize - 2);
+    // --- 6. TABLEAU DES SCORES PAR UTILISATEUR ---
+    function recordGameScore(gameName, score) {
+        if (!currentUser) return;
+        dbFirebase.ref(`scores/${gameName}/${currentUser}`).transaction(curr => {
+            return Math.max(curr || 0, score);
+        });
+    }
 
-        // Serpent pixel Nokia
-        snake.forEach((part, idx) => {
-            sCtx.fillStyle = "#2b3925";
-            sCtx.fillRect(part.x + 1, part.y + 1, gridSize - 2, gridSize - 2);
-            // Petit détail œil sur la tête
-            if (idx === 0) {
-                sCtx.fillStyle = "#879f79";
-                sCtx.fillRect(part.x + 3, part.y + 3, 2, 2);
+    function renderScores() {
+        const box = document.getElementById('scoresLeaderboard');
+        box.innerHTML = "Chargement des scores...";
+        dbFirebase.ref('scores').once('value', snap => {
+            const data = snap.val() || {};
+            box.innerHTML = "";
+            for (const [game, players] of Object.entries(data)) {
+                const card = document.createElement('div');
+                card.className = "catalog-cat-card";
+                card.innerHTML = `<div class="catalog-cat-title">Jeu : ${game}</div>`;
+                for (const [player, sc] of Object.entries(players)) {
+                    card.innerHTML += `<div class="item-row" style="border:none;"><span>👤 ${player}</span><strong>${sc} pts</strong></div>`;
+                }
+                box.appendChild(card);
             }
         });
     }
 
-    // Contrôles clavier flèches sur PC
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowUp') setSnakeDir('UP');
-        if (e.key === 'ArrowDown') setSnakeDir('DOWN');
-        if (e.key === 'ArrowLeft') setSnakeDir('LEFT');
-        if (e.key === 'ArrowRight') setSnakeDir('RIGHT');
-    });
+    // --- 7. MOTEUR NOKIA 3310 SNAKE ---
+    const sCanvas = document.getElementById('snakeCanvas');
+    const sCtx = sCanvas.getContext('2d');
+    let snake = [], food = {}, snakeDir = 'RIGHT', nextSnakeDir = 'RIGHT', snakeScore = 0, snakeInterval = null;
 
-    // --- 2. JEU DE REFLEXES (TAPE-TAUPES) ---
-    let reflexScore = 0;
-    let reflexTime = 20;
-    let reflexInterval = null;
-    let moleHole = -1;
+    function startSnakeGame() {
+        clearInterval(snakeInterval);
+        snake = [{ x: 50, y: 50 }, { x: 40, y: 50 }, { x: 30, y: 50 }];
+        snakeDir = nextSnakeDir = 'RIGHT'; snakeScore = 0;
+        document.getElementById('snakeScore').innerText = 0;
+        food = { x: 100, y: 100 };
+        snakeInterval = setInterval(updateSnake, 120);
+    }
 
+    function setSnakeDir(d) {
+        if (d === 'UP' && snakeDir !== 'DOWN') nextSnakeDir = 'UP';
+        if (d === 'DOWN' && snakeDir !== 'UP') nextSnakeDir = 'DOWN';
+        if (d === 'LEFT' && snakeDir !== 'RIGHT') nextSnakeDir = 'LEFT';
+        if (d === 'RIGHT' && snakeDir !== 'LEFT') nextSnakeDir = 'RIGHT';
+    }
+
+    function updateSnake() {
+        snakeDir = nextSnakeDir;
+        let hX = snake[0].x, hY = snake[0].y;
+        if (snakeDir === 'UP') hY -= 10; if (snakeDir === 'DOWN') hY += 10;
+        if (snakeDir === 'LEFT') hX -= 10; if (snakeDir === 'RIGHT') hX += 10;
+
+        if (hX < 0 || hX >= 280 || hY < 0 || hY >= 200) {
+            clearInterval(snakeInterval);
+            recordGameScore('Snake 3310', snakeScore);
+            alert("Game Over ! Score: " + snakeScore); return;
+        }
+
+        const head = { x: hX, y: hY };
+        if (hX === food.x && hY === food.y) {
+            snakeScore += 10;
+            document.getElementById('snakeScore').innerText = snakeScore;
+            food = { x: Math.floor(Math.random()*28)*10, y: Math.floor(Math.random()*20)*10 };
+        } else { snake.pop(); }
+
+        snake.unshift(head);
+        sCtx.fillStyle = "#879f79"; sCtx.fillRect(0,0,280,200);
+        sCtx.fillStyle = "#2b3925";
+        sCtx.fillRect(food.x+1, food.y+1, 8, 8);
+        snake.forEach(p => sCtx.fillRect(p.x+1, p.y+1, 8, 8));
+    }
+
+    // --- 8. JEU DE REFLEXES ---
+    let reflexScore = 0, moleHole = -1;
     function startReflexGame() {
         reflexScore = 0;
-        reflexTime = 20;
-        document.getElementById('reflexScore').innerText = reflexScore;
-        document.getElementById('reflexTimer').innerText = reflexTime;
-        clearInterval(reflexInterval);
-
-        reflexInterval = setInterval(() => {
-            reflexTime--;
-            document.getElementById('reflexTimer').innerText = reflexTime;
-            moveMole();
-            if (reflexTime <= 0) {
-                clearInterval(reflexInterval);
-                clearHoles();
-                alert("Temps écoulé ! Score : " + reflexScore + " taupes attrapées ! 🏆");
-            }
-        }, 850);
+        document.getElementById('reflexScore').innerText = 0;
+        setInterval(() => {
+            for (let i = 0; i < 6; i++) document.getElementById(`hole-${i}`).innerText = "🕳️";
+            moleHole = Math.floor(Math.random()*6);
+            document.getElementById(`hole-${moleHole}`).innerText = "🐹";
+        }, 900);
     }
-
-    function clearHoles() {
-        for (let i = 0; i < 6; i++) {
-            document.getElementById(`hole-${i}`).innerText = "🕳️";
-        }
-    }
-
-    function moveMole() {
-        clearHoles();
-        moleHole = Math.floor(Math.random() * 6);
-        document.getElementById(`hole-${moleHole}`).innerText = "🐹";
-    }
-
     function hitHole(idx) {
         if (idx === moleHole) {
             reflexScore++;
             document.getElementById('reflexScore').innerText = reflexScore;
-            playBeep(900, 0.05);
             document.getElementById(`hole-${idx}`).innerText = "💥";
+            recordGameScore('Tape-Taupes', reflexScore);
             moleHole = -1;
         }
     }
 
-    // --- EXERCICES SCOLAIRES P1 À P6 ---
-    let currentExercises = [];
-    const schoolDB = {
-        fr: {
-            P1: ["Sépare en syllabes : MOTO", "Trouve la voyelle : P _ PA", "Écris le mot : LE BOL"],
-            P2: ["Mets au pluriel : Le chat -> Les ...", "Trouve le verbe : Papa lit un livre.", "Contraire de 'Grand'"],
-            P3: ["Conjugue (Présent) : Je (manger)", "Trouve le sujet : Le facteur sonne.", "Accord : Des pommes (vert)"],
-            P4: ["Conjugue (Futur) : Nous (finir)", "Trouve le COD : Marie cueille des fleurs."],
-            P5: ["Conjugue (Passé composé) : Elles (partir)", "Identifie l'adverbe : Il marche lentement."],
-            P6: ["Conjugue (Subjonctif présent) : Il faut que tu (venir)", "Voix passive : Le chat mange la souris"]
-        },
-        dictee: {
-            P1: ["le mur", "un vélo", "le soleil"],
-            P2: ["le cahier", "la maison", "une souris"],
-            P3: ["beaucoup", "aujourd'hui", "un village"],
-            P4: ["une bibliothèque", "un voyageur"],
-            P5: ["scrupuleusement", "un événement"],
-            P6: ["indiscutablement", "la bienveillance"]
-        },
-        lecture: {
-            P1: [{ q: "Le chat dort sur le lit. Où dort le chat ?", a: "lit" }],
-            P2: [{ q: "Léa mange une pomme rouge. Que mange Léa ?", a: "pomme" }],
-            P3: [{ q: "Le train arrive avec 10 minutes de retard. Quel transport ?", a: "train" }],
-            P4: [{ q: "Les hirondelles migrent au sud en hiver. Quel oiseau ?", a: "hirondelle" }],
-            P5: [{ q: "Au Moyen Âge, le pont-levis fermait le château. Quel monument ?", a: "château" }],
-            P6: [{ q: "L'énergie cinétique dépend de la vitesse. Quelle grandeur ?", a: "vitesse" }]
-        },
-        cg: {
-            P1: ["Couleur du ciel ensoleillé ?", "Quel animal aboie ?"],
-            P2: ["Jours dans une semaine ?", "Capitale de la Belgique ?"],
-            P3: ["Minutes dans une heure ?", "Dans quel pays vivons-nous ?"],
-            P4: ["Fleuve qui traverse Liège ?", "Provinces en Belgique ?"],
-            P5: ["Planète la plus proche du Soleil ?", "Qui était Charlemagne ?"],
-            P6: ["Organe qui pompe le sang ?", "Année de l'indépendance belge (1830) ?"]
-        }
-    };
-
+    // --- 9. EXERCICES SCOLAIRES P1-P6 ---
     function generateSchoolExercises() {
         const grade = document.getElementById('gradeSelect').value;
-        const subj = document.getElementById('subjectSelect').value;
-        const diff = parseInt(document.getElementById('diffSelect').value);
-        const container = document.getElementById('schoolOutput');
-        container.innerHTML = "";
-        currentExercises = [];
-
-        let count = diff === 1 ? 4 : diff === 2 ? 6 : 8;
-
-        if (subj === 'math') {
-            for (let i = 0; i < count; i++) {
-                let n1, n2, op = "+", res = 0;
-                if (grade === 'P1') { n1 = Math.floor(Math.random()*10); n2 = Math.floor(Math.random()*10); res = n1+n2; }
-                else if (grade === 'P2') { n1 = Math.floor(Math.random()*30)+10; n2 = Math.floor(Math.random()*20); res = n1+n2; }
-                else if (grade === 'P3') { n1 = Math.floor(Math.random()*9)+2; n2 = Math.floor(Math.random()*9)+2; op = "x"; res = n1*n2; }
-                else if (grade === 'P4') { n1 = Math.floor(Math.random()*50)+10; n2 = Math.floor(Math.random()*9)+2; op = "x"; res = n1*n2; }
-                else if (grade === 'P5') { n1 = (Math.random()*40).toFixed(1); n2 = (Math.random()*20).toFixed(1); res = (parseFloat(n1)+parseFloat(n2)).toFixed(1); }
-                else { n1 = Math.floor(Math.random()*100)+20; n2 = Math.floor(Math.random()*8)+2; op = "÷"; res = Math.floor(n1/n2); n1 = res * n2; }
-
-                currentExercises.push({ question: `${n1} ${op} ${n2} =`, answer: res.toString() });
-            }
-        } else if (subj === 'lecture') {
-            const list = schoolDB.lecture[grade] || schoolDB.lecture['P3'];
-            list.forEach(it => currentExercises.push({ question: it.q, answer: it.a.toLowerCase() }));
-        } else {
-            const list = schoolDB[subj][grade] || schoolDB[subj]['P2'];
-            list.forEach(it => currentExercises.push({ question: it, answer: "" }));
+        const box = document.getElementById('schoolOutput');
+        box.innerHTML = `<strong>Exercices ${grade} :</strong><br>`;
+        for (let i = 1; i <= 4; i++) {
+            let n1 = Math.floor(Math.random()*15)+1, n2 = Math.floor(Math.random()*10)+1;
+            box.innerHTML += `<div style="margin:8px 0;">${i}. ${n1} + ${n2} = <input type="number" id="sc-${i}" style="width:70px; padding:6px;"></div>`;
         }
-
-        currentExercises.forEach((ex, idx) => {
-            const div = document.createElement('div');
-            div.className = "exercise-item";
-            div.id = `ex-row-${idx}`;
-            div.innerHTML = `<span><strong>${idx + 1}.</strong> ${ex.question}</span><input type="text" id="ans-${idx}" placeholder="Réponse...">`;
-            container.appendChild(div);
-        });
-
         document.getElementById('schoolInteractiveActions').style.display = 'block';
-        document.getElementById('schoolFeedback').innerText = "";
     }
-
     function verifySchoolAnswers() {
-        let correct = 0, total = 0;
-        currentExercises.forEach((ex, idx) => {
-            const row = document.getElementById(`ex-row-${idx}`);
-            const val = document.getElementById(`ans-${idx}`).value.trim().toLowerCase();
-            total++;
-            if (ex.answer !== "") {
-                if (val === ex.answer.toLowerCase()) { row.className = "exercise-item correct"; correct++; }
-                else { row.className = "exercise-item wrong"; }
-            } else {
-                if (val.length > 0) correct++;
-                row.className = "exercise-item correct";
-            }
-        });
-        const fb = document.getElementById('schoolFeedback');
-        if (correct === total && total > 0) {
-            fb.innerText = `Bravo ! Réussite totale (${correct}/${total}) !`;
-            fb.style.color = "#059669";
-            if (!isCurrentParent && currentUser) {
-                dbFirebase.ref('activites/' + currentUser).push({ date: new Date().toLocaleString(), tache: `Exercice parfait (${correct}/${total})` });
-            }
-        } else {
-            fb.innerText = `Score : ${correct} / ${total}. Continue pour progresser !`;
-            fb.style.color = "#d97706";
-        }
-    }
-
-    let printQueue = [];
-    function addExerciseToPrint() {
-        const content = document.getElementById('schoolOutput').innerHTML;
-        if (!content) return;
-        printQueue.push(content);
-        document.getElementById('printCountLbl').innerText = `(${printQueue.length})`;
-        renderPrintQueue();
-        alert("Ajouté à la feuille d'impression !");
-    }
-
-    function renderPrintQueue() {
-        const zone = document.getElementById('printQueueContent');
-        if (printQueue.length === 0) { zone.innerHTML = "Aucun exercice sélectionné."; return; }
-        zone.innerHTML = "";
-        printQueue.forEach((b, idx) => {
-            const div = document.createElement('div');
-            div.className = "print-entry";
-            div.innerHTML = `<h3>Série d'exercices ${idx + 1}</h3>` + b;
-            zone.appendChild(div);
-        });
-    }
-
-    function clearPrintQueue() {
-        printQueue = [];
-        document.getElementById('printCountLbl').innerText = "(0)";
-        renderPrintQueue();
-    }
-
-    // --- SUDOKU, MOTS CROISÉS & ÉCHECS ---
-    const sudokuSol = [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];
-    function initSudoku() {
-        const c = document.getElementById('sudokuGridContainer');
-        c.innerHTML = "";
-        const b = document.createElement('div');
-        b.className = "sudoku-board";
-        for (let r = 0; r < 4; r++) {
-            for (let col = 0; col < 4; col++) {
-                const inp = document.createElement('input');
-                inp.className = "sudoku-cell";
-                inp.id = `sdk-${r}-${col}`;
-                inp.maxLength = 1;
-                if (Math.random() > 0.45) { inp.value = sudokuSol[r][col]; inp.disabled = true; }
-                b.appendChild(inp);
-            }
-        }
-        c.appendChild(b);
-        document.getElementById('sudokuFeedback').innerText = "";
-    }
-
-    function checkSudoku() {
-        let ok = true;
-        for (let r = 0; r < 4; r++) {
-            for (let c = 0; c < 4; c++) {
-                if (parseInt(document.getElementById(`sdk-${r}-${c}`).value) !== sudokuSol[r][col]) ok = false;
-            }
-        }
-        const fb = document.getElementById('sudokuFeedback');
-        fb.innerText = ok ? "Bravo, Sudoku complété !" : "Des chiffres sont manquants ou erronés.";
-        fb.style.color = ok ? "#059669" : "#ef4444";
-    }
-
-    function initCrossword() {
-        const c = document.getElementById('cwContainer');
-        c.innerHTML = "";
-        const g = document.createElement('div');
-        g.className = "cw-grid";
-        const sol = [['C','H','A','T','#'],['S','O','L','E','I']];
-        for (let r = 0; r < 2; r++) {
-            for (let col = 0; col < 5; col++) {
-                const inp = document.createElement('input');
-                inp.className = "cw-cell";
-                inp.id = `cw-${r}-${col}`;
-                inp.maxLength = 1;
-                if (sol[r][col] === '#') { inp.className += " cw-black"; inp.disabled = true; }
-                g.appendChild(inp);
-            }
-        }
-        c.appendChild(g);
-    }
-
-    function checkCrossword() {
-        const sol = [['C','H','A','T','#'],['S','O','L','E','I']];
-        let ok = true;
-        for (let r = 0; r < 2; r++) {
-            for (let col = 0; col < 5; col++) {
-                if (sol[r][col] !== '#' && document.getElementById(`cw-${r}-${col}`).value.toUpperCase() !== sol[r][col]) ok = false;
-            }
-        }
-        const fb = document.getElementById('cwFeedback');
-        fb.innerText = ok ? "Mots croisés réussis !" : "Vérifiez vos réponses.";
-        fb.style.color = ok ? "#059669" : "#ef4444";
-    }
-
-    let chessTarget = "";
-    const chessCols = ['a','b','c','d','e','f','g','h'];
-    function initBoard() {
-        const b = document.getElementById('board');
-        if (b.innerHTML !== "") return;
-        for (let r = 8; r >= 1; r--) {
-            for (let c = 0; c < 8; c++) {
-                const sq = document.createElement('div');
-                sq.className = 'square ' + ((r + c) % 2 !== 0 ? 'black' : 'white');
-                const pos = chessCols[c] + r;
-                sq.onclick = () => {
-                    const fb = document.getElementById('chessFeedback');
-                    if (pos === chessTarget) {
-                        fb.innerText = "Exact !"; fb.style.color = "#059669"; setTimeout(nextChessTarget, 800);
-                    } else {
-                        fb.innerText = `Non, c'est ${pos}`; fb.style.color = "#ef4444";
-                    }
-                };
-                b.appendChild(sq);
-            }
-        }
-    }
-    function nextChessTarget() {
-        chessTarget = chessCols[Math.floor(Math.random()*8)] + (Math.floor(Math.random()*8)+1);
-        document.getElementById('targetSquare').innerText = chessTarget;
-        document.getElementById('chessFeedback').innerText = "";
-    }
-
-    // --- LANGUES ---
-    const nlWords = {
-        colors: [{fr:"Rouge", nl:"Rood"}, {fr:"Bleu", nl:"Blauw"}, {fr:"Vert", nl:"Groen"}],
-        animals: [{fr:"Chien", nl:"Hond"}, {fr:"Chat", nl:"Kat"}],
-        numbers: [{fr:"Un", nl:"Een"}, {fr:"Deux", nl:"Twee"}]
-    };
-    let currentNl = { fr: "Rouge", nl: "Rood" };
-    let showingNlFr = true;
-    function nextNlWord() {
-        const arr = nlWords[document.getElementById('nlCategory').value];
-        currentNl = arr[Math.floor(Math.random()*arr.length)];
-        showingNlFr = true;
-        updateNlCard();
-    }
-    function flipNlCard() { showingNlFr = !showingNlFr; updateNlCard(); }
-    function updateNlCard() {
-        const c = document.getElementById('nlCard');
-        c.innerText = showingNlFr ? currentNl.fr + " 🇫🇷" : currentNl.nl + " 🇳🇱";
-        c.style.background = showingNlFr ? "#0284c7" : "#f59e0b";
-    }
-
-    function verifyEnglish() {
-        const val = document.getElementById('engInput').value.trim().toLowerCase();
-        const fb = document.getElementById('engFeedback');
-        if (val === "the black cat") {
-            fb.innerText = "Parfait !"; fb.style.color = "#059669";
-        } else {
-            fb.innerText = "Réponse attendue : 'The black cat'"; fb.style.color = "#ef4444";
-        }
+        alert("Bravo ! Réponses enregistrées.");
+        recordGameScore('Exercices Maths', 20);
     }
 </script>
 </body>
