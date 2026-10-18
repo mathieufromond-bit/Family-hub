@@ -10,7 +10,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <!-- Tesseract OCR pour le scanner de calendrier photo -->
+    <!-- Tesseract OCR -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <style>
         :root {
@@ -71,47 +71,48 @@
 
         .bg-courses { background: linear-gradient(135deg, #e11d48, #f43f5e); }
         .bg-school { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        .bg-manager { background: linear-gradient(135deg, #0284c7, #0ea5e9); }
         .bg-recipes { background: linear-gradient(135deg, #0d9488, #14b8a6); }
         .bg-agenda { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-        .bg-village { background: linear-gradient(135deg, #059669, #10b981); }
         .bg-games { background: linear-gradient(135deg, #7c3aed, #a855f7); }
         .bg-scores { background: linear-gradient(135deg, #ea580c, #f97316); }
 
         .app-view { display: none; padding: 20px; }
 
+        /* UI Générique & Boutons */
+        .btn-action { background-color: var(--kid-accent); color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; width: 100%; margin-top: 8px; }
+        .btn-secondary { background-color: var(--accent); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 6px; width: 100%; }
+        select, input[type="text"] { width: 100%; padding: 11px; border-radius: 8px; border: 1px solid var(--border-light); box-sizing: border-box; margin-bottom: 10px; font-size: 0.95em; outline: none; }
+
+        /* UI Exercices */
+        .exercise-item { background: #ffffff; border: 1px solid var(--border-light); border-left: 5px solid #d97706; padding: 14px; margin-bottom: 12px; border-radius: 8px; box-shadow: var(--shadow-subtle); }
+        .exercise-item input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; width: 150px; margin-left: 10px; outline: none; }
+        .exercise-item.correct { border-left-color: #10b981; background: #ecfdf5; }
+        .exercise-item.wrong { border-left-color: #ef4444; background: #fef2f2; }
+
+        /* UI Manager Tycoon */
+        .manager-header-stats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .stat-badge { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 20px; font-weight: bold; font-size: 0.9em; }
+        .tycoon-card { background: white; border: 1px solid var(--border-light); border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow-subtle); }
+
         /* Courses UI */
-        .controls-box { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-        .controls-row { display: flex; gap: 8px; }
-        .controls-row input[type="text"] { flex: 3; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; }
-        .controls-row input[type="number"] { width: 70px; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; text-align: center; }
-        .controls-row select { flex: 2; padding: 12px; border: 1px solid var(--border-light); border-radius: 8px; background: white; }
-        .btn-add { background-color: var(--accent); border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer; color: white; font-weight: 700; }
-        
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: white; margin-bottom: 6px; border-radius: 8px; border: 1px solid #f1f5f9; box-shadow: var(--shadow-subtle); }
         .item-row.checked { text-decoration: line-through; opacity: 0.5; background: #f8fafc; }
         .item-category-tag { font-size: 0.75em; font-weight: 600; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
-        .item-actions { display: flex; align-items: center; gap: 6px; }
-        .item-row button { padding: 6px 12px; font-size: 13px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: 700; }
         .qty-inline { width: 44px; padding: 5px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; }
-        .check-btn { background-color: #0d9488; }
-        .remove-btn { background-color: #ef4444; }
+        .check-btn { background-color: #0d9488; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .remove-btn { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .add-catalog-btn { background-color: var(--kid-accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; }
-
         .catalog-cat-card { background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 12px; margin-bottom: 12px; }
         .catalog-cat-title { font-weight: 700; font-size: 0.95em; color: var(--primary); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9; }
 
-        .btn-action { background-color: var(--kid-accent); color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; width: 100%; margin-top: 8px; }
-        .btn-secondary { background-color: var(--accent); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 6px; width: 100%; }
-
-        /* Village Gestion Grid */
-        .village-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 15px 0; }
-        .village-slot { aspect-ratio: 1; background: #e2e8f0; border: 2px dashed #94a3b8; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.8em; cursor: pointer; }
-        .res-badge { display: inline-block; background: #fff; padding: 6px 12px; border-radius: 20px; font-weight: bold; border: 1px solid #cbd5e1; margin: 4px; }
-
-        /* Nokia Canvas */
-        .nokia-screen { background: #9cb190; border: 10px solid #334155; border-radius: 10px; display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0 auto; width: 300px; }
-        .dpad-container { display: grid; grid-template-columns: repeat(3, 55px); grid-template-rows: repeat(3, 55px); gap: 6px; justify-content: center; margin: 10px auto; }
-        .dpad-btn { background: #e2e8f0; border: 2px solid #94a3b8; border-radius: 10px; font-size: 1.4em; cursor: pointer; }
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; max-width: 100%; }
+            .app-header, #dashboard-screen, .app-view, .no-print { display: none !important; }
+            #app-print-view { display: block !important; padding: 0; }
+            .print-entry { page-break-inside: avoid; border-bottom: 1px dashed #aaa; padding-bottom: 15px; margin-bottom: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -120,13 +121,12 @@
     <header class="app-header">
         <span class="header-title" id="headerTitle">Espace Familial</span>
         <div style="display:flex; gap:6px;">
-            <button id="changePinBtn" class="nav-btn" onclick="openPinModal()">⚙️ PIN</button>
             <button id="logoutBtn" class="nav-btn" onclick="logout()">Déconnexion</button>
             <button id="backBtn" class="nav-btn" onclick="showDashboard()">← Retour</button>
         </div>
     </header>
 
-    <!-- 1. PROFILS -->
+    <!-- 1. SÉLECTION PROFIL -->
     <section id="login-screen">
         <h1 style="font-size:1.8em; margin-bottom:6px;">Bienvenue</h1>
         <p style="color:var(--text-muted); margin-bottom:30px;">Choisissez un profil pour continuer</p>
@@ -138,7 +138,7 @@
         </div>
     </section>
 
-    <!-- 2. PIN -->
+    <!-- 2. PIN SÉCURISÉ -->
     <section id="pin-screen">
         <h2 id="pinTitle">Accès Parent</h2>
         <div class="pin-dots">
@@ -160,16 +160,95 @@
         <div class="widget-grid" id="widgetGrid"></div>
     </main>
 
-    <!-- 4. APP COURSES (Correction Divers & Auto-Apprentissage) -->
+    <!-- 4. APP EXERCICES SCOLAIRES P1 À P6 (INFINIS & TOUTES MATIÈRES) -->
+    <section id="app-school" class="app-view">
+        <div class="no-print">
+            <label style="font-weight:bold; font-size:0.9em;">1. Niveau scolaire :</label>
+            <select id="gradeSelect">
+                <option value="P1">1ère Primaire (P1)</option>
+                <option value="P2">2ème Primaire (P2)</option>
+                <option value="P3">3ème Primaire (P3)</option>
+                <option value="P4">4ème Primaire (P4)</option>
+                <option value="P5">5ème Primaire (P5)</option>
+                <option value="P6">6ème Primaire (P6)</option>
+            </select>
+
+            <label style="font-weight:bold; font-size:0.9em;">2. Matière :</label>
+            <select id="subjectSelect">
+                <option value="math">🧮 Mathématiques (Calcul, Tables, Fractions)</option>
+                <option value="fr">📖 Français (Grammaire, Conjugaison, Accords)</option>
+                <option value="dictee">✍️ Dictée & Orthographe</option>
+                <option value="lecture">👁 Lecture & Compréhension de texte</option>
+                <option value="cg">🌍 Éveil, Histoire & Sciences</option>
+            </select>
+
+            <label style="font-weight:bold; font-size:0.9em;">3. Nombre de questions :</label>
+            <select id="countSelect">
+                <option value="4">4 exercices</option>
+                <option value="8">8 exercices</option>
+                <option value="12">12 exercices (Grand entraînement)</option>
+            </select>
+
+            <button class="btn-action" onclick="generateSchoolExercises()">🎲 Générer une nouvelle série aléatoire</button>
+        </div>
+
+        <div id="schoolOutput" style="margin-top:18px;"></div>
+
+        <div id="schoolInteractiveActions" style="display:none; margin-top:16px;">
+            <button class="btn-action" onclick="verifySchoolAnswers()">✨ Valider mes réponses</button>
+            <button class="btn-secondary" onclick="addExerciseToPrint()">➕ Ajouter à la feuille d'impression</button>
+        </div>
+        <div id="schoolFeedback" style="text-align:center; font-weight:700; font-size:1.1em; margin-top:12px;"></div>
+    </section>
+
+    <!-- 5. APP GESTION TYCOON (AIRLINE & CITY MANAGER) -->
+    <section id="app-manager" class="app-view">
+        <div class="manager-header-stats">
+            <span class="stat-badge">💰 Trésorerie: <span id="mngMoney" style="color:#059669;">150 000</span> €</span>
+            <span class="stat-badge">⭐ Réputation: <span id="mngRep">100</span>%</span>
+            <span class="stat-badge">⛽ Kérosène: <span id="mngFuel">5 000</span> L</span>
+        </div>
+
+        <div class="tycoon-card">
+            <h4 style="margin:0 0 10px 0;">✈️ Lancer un vol commercial</h4>
+            <div style="display:flex; gap:8px;">
+                <select id="flightRouteSelect" style="margin:0;">
+                    <option value="paris">Bruxelles ➔ Paris (Coût: 1 200€ | Gain: 4 500€)</option>
+                    <option value="nice">Bruxelles ➔ Nice (Coût: 3 000€ | Gain: 9 800€)</option>
+                    <option value="rome">Bruxelles ➔ Rome (Coût: 4 500€ | Gain: 14 000€)</option>
+                    <option value="ny">Bruxelles ➔ New York (Coût: 18 000€ | Gain: 55 000€)</option>
+                </select>
+                <button class="btn-action" style="margin:0; width:auto; white-space:nowrap;" onclick="launchFlight()">Décoller 🛫</button>
+            </div>
+            <div id="flightResult" style="font-size:0.88em; font-weight:bold; margin-top:8px;"></div>
+        </div>
+
+        <div class="tycoon-card">
+            <h4 style="margin:0 0 10px 0;">🏢 Développement de l'Aéroport & Flotte</h4>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <button class="btn-secondary" onclick="buyFuel()">⛽ +5 000L Kérosène (3 000 €)</button>
+                <button class="btn-secondary" onclick="upgradeTerminal()">🏨 Agrandir Terminal (25 000 €)</button>
+                <button class="btn-secondary" onclick="buyPlane('ATR72')">🛩️ Acheter ATR-72 (40 000 €)</button>
+                <button class="btn-secondary" onclick="buyPlane('A320')">✈️ Acheter Airbus A320 (95 000 €)</button>
+            </div>
+        </div>
+
+        <div class="tycoon-card">
+            <h4 style="margin:0 0 6px 0;">📋 Votre Compagnie</h4>
+            <div id="companySummary" style="font-size:0.9em; color:var(--text-muted);">Flotte : 1x ATR Régional | Terminal Niveau 1</div>
+        </div>
+    </section>
+
+    <!-- 6. APP COURSES (Rayon Divers + Recettes) -->
     <section id="app-courses" class="app-view">
         <div class="controls-box">
             <div class="controls-row">
-                <input type="text" id="newItemInput" placeholder="Ex: Fil dentaire, Beurre, Sacs congélation...">
+                <input type="text" id="newItemInput" placeholder="Article à ajouter...">
                 <input type="number" id="newItemQty" value="1" min="1">
             </div>
             <div class="controls-row">
                 <select id="newItemCategorySelect">
-                    <option value="auto">✨ Détection auto du rayon</option>
+                    <option value="auto">✨ Détection automatique du rayon</option>
                     <option value="🥤 Boissons">🥤 Boissons</option>
                     <option value="🍎 Fruits & Légumes">🍎 Fruits & Légumes</option>
                     <option value="🥐 Boulangerie & Céréales">🥐 Boulangerie & Céréales</option>
@@ -187,7 +266,7 @@
         </div>
 
         <div style="background:#f8fafc; border:1px solid var(--border-light); padding:14px; border-radius:12px; margin-bottom:14px;">
-            <h3 style="margin:0 0 10px 0;">🛒 Liste des courses (<span id="countCourses">0</span>)</h3>
+            <h3 style="margin:0 0 10px 0;">🛒 Articles en attente (<span id="countCourses">0</span>)</h3>
             <div id="unifiedListContainer"></div>
         </div>
 
@@ -196,117 +275,94 @@
             <button onclick="pushToFirebase()" style="background:var(--kid-accent); flex:1; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">💾 Sauvegarder</button>
             <button onclick="clearCourses()" style="background:#64748b; flex:1; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">Vider</button>
         </div>
-        <div id="syncStatus" style="font-size:12px; text-align:center; font-weight:bold; color:#059669; margin-bottom:15px;">✅ Synchronisé</div>
+        <div id="syncStatus" style="font-size:12px; text-align:center; font-weight:bold; color:#059669; margin-bottom:15px;">✅ Synchronisé en direct</div>
 
         <h3>Rayons d'ajout rapide</h3>
         <div id="categorizedCatalog"></div>
     </section>
 
-    <!-- 5. SUIVI DES RECETTES & LISTE AUTOMATIQUE -->
+    <!-- 7. APP RECETTES -->
     <section id="app-recipes" class="app-view">
-        <h3>📖 Bibliothèque de Recettes</h3>
-        <button class="btn-action" onclick="showNewRecipeForm()">➕ Créer une nouvelle recette</button>
-        
+        <h3>🍳 Bibliothèque des Recettes de la Tribu</h3>
+        <button class="btn-action" onclick="showNewRecipeForm()">➕ Nouvelle recette</button>
         <div id="newRecipeForm" style="display:none; background:#f1f5f9; padding:14px; border-radius:8px; margin-top:10px;">
-            <input type="text" id="recTitle" placeholder="Titre (ex: Crêpes maison)">
-            <textarea id="recIngredients" placeholder="Ingrédients séparés par des virgules (ex: Farine, Oeufs, Lait, Sucre)" style="width:100%; height:70px; padding:10px; border-radius:6px; border:1px solid #cbd5e1; margin-bottom:8px;"></textarea>
-            <button class="btn-action" onclick="saveRecipe()">Enregistrer la recette</button>
+            <input type="text" id="recTitle" placeholder="Nom de la recette">
+            <input type="text" id="recIngredients" placeholder="Ingrédients (ex: Pommes, Beurre, Farine...)">
+            <button class="btn-action" onclick="saveRecipe()">Enregistrer</button>
         </div>
         <div id="recipesContainer" style="margin-top:15px;"></div>
     </section>
 
-    <!-- 6. AGENDA FAMILIAL & SCANNER PHOTO -->
+    <!-- 8. APP AGENDA & OCR -->
     <section id="app-agenda" class="app-view">
-        <h3>📅 Agenda de la Tribu</h3>
+        <h3>📅 Agenda Familial</h3>
         <div style="background:#f1f5f9; padding:14px; border-radius:10px; margin-bottom:15px;">
-            <strong>📷 Importer le calendrier papier :</strong>
-            <p style="font-size:0.85em; color:var(--text-muted); margin:4px 0 10px 0;">Prenez une photo de votre calendrier mural pour ajouter automatiquement les rendez-vous.</p>
-            <input type="file" id="calPhotoInput" accept="image/*" capture="environment" onchange="scanCalendarPhoto(event)">
+            <strong>📷 Scanner le calendrier papier :</strong>
+            <p style="font-size:0.85em; color:var(--text-muted); margin:4px 0 10px 0;">Prenez en photo le calendrier du frigo pour importer les dates.</p>
+            <input type="file" id="calPhotoInput" accept="image/*" onchange="scanCalendarPhoto(event)">
             <div id="ocrStatus" style="font-weight:bold; font-size:0.85em; margin-top:6px; color:var(--accent);"></div>
         </div>
-
         <div style="display:flex; gap:6px; margin-bottom:15px;">
-            <input type="date" id="eventDate" style="flex:1; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
-            <input type="text" id="eventTitle" placeholder="Événement..." style="flex:2; padding:8px; border-radius:6px; border:1px solid #cbd5e1; margin:0;">
+            <input type="date" id="eventDate" style="flex:1;">
+            <input type="text" id="eventTitle" placeholder="Événement..." style="flex:2; margin:0;">
             <button class="btn-add" onclick="addCalendarEvent()">Ajouter</button>
         </div>
         <div id="agendaList"></div>
     </section>
 
-    <!-- 7. JEU DE GESTION : TRIBU CITY / VILLAGE -->
-    <section id="app-village" class="app-view">
-        <h3 style="margin-top:0;">🌾 Mon Village Tribu</h3>
-        <div>
-            <span class="res-badge">🪵 Bois: <span id="resWood">10</span></span>
-            <span class="res-badge">🪨 Pierre: <span id="resStone">5</span></span>
-            <span class="res-badge">🪙 Pièces: <span id="resGold">20</span></span>
-        </div>
-        <div style="display:flex; gap:6px; margin-top:10px;">
-            <button class="btn-secondary" onclick="gatherResource('wood')">🪓 Couper du bois</button>
-            <button class="btn-secondary" onclick="gatherResource('stone')">⛏️ Miner de la pierre</button>
-        </div>
-        <h4>Terrain du Village (Touchez pour bâtir) :</h4>
-        <div class="village-board" id="villageBoard"></div>
-    </section>
-
-    <!-- 8. TABLEAU DES SCORES PAR UTILISATEUR -->
-    <section id="app-scores" class="app-view">
-        <h3>🏆 Tableau d'honneur des Jeux</h3>
-        <div id="scoresLeaderboard"></div>
-    </section>
-
-    <!-- 9. JEUX RETRO (Snake 3310, Taupes, etc.) -->
+    <!-- 9. APP JEUX RETRO (Snake 3310 & Taupes) -->
     <section id="app-games" class="app-view">
         <select id="gameSubSelect" onchange="switchGameSubView()">
             <option value="snake">🐍 Snake Nokia 3310</option>
             <option value="reflex">⚡ Réflexes & Taupes</option>
         </select>
         <div id="sub-snake">
-            <div class="nokia-screen">
-                <div style="width:100%; display:flex; justify-content:space-between; font-weight:bold; color:#2b3925; margin-bottom:4px;">
+            <div style="background:#9cb190; border:10px solid #334155; border-radius:10px; padding:10px; max-width:300px; margin:0 auto;">
+                <div style="display:flex; justify-content:space-between; font-weight:bold; color:#2b3925; margin-bottom:4px;">
                     <span>NOKIA</span><span>SCORE: <span id="snakeScore">0</span></span>
                 </div>
-                <canvas id="snakeCanvas" width="280" height="200"></canvas>
+                <canvas id="snakeCanvas" width="280" height="200" style="background:#879f79; display:block; border:2px solid #2b3925;"></canvas>
             </div>
-            <div style="text-align:center;"><button class="btn-action" style="max-width:180px;" onclick="startSnakeGame()">▶ Démarrer</button></div>
-            <div class="dpad-container">
-                <div></div><button class="dpad-btn" onclick="setSnakeDir('UP')">▲</button><div></div>
-                <button class="dpad-btn" onclick="setSnakeDir('LEFT')">◀</button><div></div><button class="dpad-btn" onclick="setSnakeDir('RIGHT')">▶</button>
-                <div></div><button class="dpad-btn" onclick="setSnakeDir('DOWN')">▼</button><div></div>
+            <div style="text-align:center; margin-top:8px;"><button class="btn-action" style="max-width:180px;" onclick="startSnakeGame()">▶ Démarrer</button></div>
+            <div style="display:grid; grid-template-columns:repeat(3, 55px); gap:6px; justify-content:center; margin:10px auto;">
+                <div></div><button class="nav-btn" style="display:block; padding:12px;" onclick="setSnakeDir('UP')">▲</button><div></div>
+                <button class="nav-btn" style="display:block; padding:12px;" onclick="setSnakeDir('LEFT')">◀</button><div></div><button class="nav-btn" style="display:block; padding:12px;" onclick="setSnakeDir('RIGHT')">▶</button>
+                <div></div><button class="nav-btn" style="display:block; padding:12px;" onclick="setSnakeDir('DOWN')">▼</button><div></div>
             </div>
         </div>
         <div id="sub-reflex" style="display:none; text-align:center;">
             <h3>Score : <span id="reflexScore" style="color:var(--accent);">0</span></h3>
             <button class="btn-action" style="max-width:180px;" onclick="startReflexGame()">Lancer le jeu</button>
             <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; max-width:280px; margin:15px auto;">
-                <div class="tap-hole" id="hole-0" onclick="hitHole(0)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
-                <div class="tap-hole" id="hole-1" onclick="hitHole(1)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
-                <div class="tap-hole" id="hole-2" onclick="hitHole(2)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
-                <div class="tap-hole" id="hole-3" onclick="hitHole(3)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
-                <div class="tap-hole" id="hole-4" onclick="hitHole(4)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
-                <div class="tap-hole" id="hole-5" onclick="hitHole(5)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div id="hole-0" onclick="hitHole(0)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div id="hole-1" onclick="hitHole(1)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div id="hole-2" onclick="hitHole(2)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div id="hole-3" onclick="hitHole(3)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div id="hole-4" onclick="hitHole(4)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
+                <div id="hole-5" onclick="hitHole(5)" style="font-size:2em; background:#f1f5f9; padding:20px; border-radius:10px; cursor:pointer;">🕳️</div>
             </div>
         </div>
     </section>
 
-    <!-- 10. EXERCICES P1-P6 -->
-    <section id="app-school" class="app-view">
-        <label>Niveau :</label>
-        <select id="gradeSelect">
-            <option value="P1">1ère Primaire</option><option value="P2">2ème Primaire</option>
-            <option value="P3">3ème Primaire</option><option value="P4">4ème Primaire</option>
-            <option value="P5">5ème Primaire</option><option value="P6">6ème Primaire</option>
-        </select>
-        <button class="btn-action" onclick="generateSchoolExercises()">Générer les exercices</button>
-        <div id="schoolOutput" style="margin-top:14px;"></div>
-        <div id="schoolInteractiveActions" style="display:none; margin-top:10px;">
-            <button class="btn-action" onclick="verifySchoolAnswers()">Valider les réponses</button>
+    <!-- 10. APP SCORES -->
+    <section id="app-scores" class="app-view">
+        <h3>🏆 Tableau des Scores par Joueur</h3>
+        <div id="scoresLeaderboard">Chargement...</div>
+    </section>
+
+    <!-- 11. FEUILLE D'IMPRESSION -->
+    <section id="app-print-view" class="app-view">
+        <div class="no-print">
+            <button class="btn-action" onclick="window.print()">🖨️ Imprimer la feuille</button>
+            <button class="btn-secondary" style="background:#ef4444;" onclick="clearPrintQueue()">Vider la sélection</button>
         </div>
+        <h2>Exercices prêts pour impression</h2>
+        <div id="printQueueContent">Aucun exercice en attente.</div>
     </section>
 </div>
 
 <script>
-    // --- 1. SÉCURITÉ & FIREBASE ---
+    // --- 1. IDENTIFICATION & PIN ---
     let PARENT_PIN = localStorage.getItem('tribu_parent_pin') || "1234";
     let currentUser = null;
     let isCurrentParent = false;
@@ -365,7 +421,7 @@
         initCourses();
         initRecipes();
         initAgenda();
-        initVillage();
+        initTycoon();
     }
 
     function logout() {
@@ -381,15 +437,15 @@
     function buildDashboard() {
         const grid = document.getElementById('widgetGrid');
         grid.innerHTML = `
-            <div class="widget-card bg-recipes" onclick="openApp('app-recipes', 'Recettes de Cuisine')"><div class="widget-icon">🍳</div><div>Recettes</div></div>
-            <div class="widget-card bg-agenda" onclick="openApp('app-agenda', 'Agenda Familial')"><div class="widget-icon">📅</div><div>Agenda</div></div>
-            <div class="widget-card bg-village" onclick="openApp('app-village', 'Mon Village')"><div class="widget-icon">🌾</div><div>Mon Village</div></div>
-            <div class="widget-card bg-games" onclick="openApp('app-games', 'Jeux Rétro')"><div class="widget-icon">🎮</div><div>Jeux</div></div>
-            <div class="widget-card bg-scores" onclick="openApp('app-scores', 'Scores & Exploits')"><div class="widget-icon">🏆</div><div>Scores</div></div>
-            <div class="widget-card bg-school" onclick="openApp('app-school', 'Exercices P1-P6')"><div class="widget-icon">📝</div><div>Exercices</div></div>
+            <div class="widget-card bg-school" onclick="openApp('app-school', '📚 Exercices P1-P6')"><div class="widget-icon">📝</div><div>Exercices<br><small style="opacity:0.85;">P1 à P6</small></div></div>
+            <div class="widget-card bg-manager" onclick="openApp('app-manager', '✈️ Airline Tycoon')"><div class="widget-icon">🛫</div><div>Airline Manager<br><small style="opacity:0.85;">Gestion</small></div></div>
+            <div class="widget-card bg-recipes" onclick="openApp('app-recipes', '🍳 Recettes')"><div class="widget-icon">🍳</div><div>Recettes<br><small style="opacity:0.85;">Repas</small></div></div>
+            <div class="widget-card bg-agenda" onclick="openApp('app-agenda', '📅 Agenda')"><div class="widget-icon">📅</div><div>Agenda<br><small style="opacity:0.85;">Planning</small></div></div>
+            <div class="widget-card bg-games" onclick="openApp('app-games', '🎮 Jeux Rétro')"><div class="widget-icon">🎮</div><div>Jeux<br><small style="opacity:0.85;">Snake, Taupes</small></div></div>
+            <div class="widget-card bg-scores" onclick="openApp('app-scores', '🏆 Scores')"><div class="widget-icon">🏆</div><div>Scores<br><small style="opacity:0.85;">Exploits</small></div></div>
         `;
         if (isCurrentParent) {
-            grid.innerHTML = `<div class="widget-card bg-courses" onclick="openApp('app-courses', 'Courses & Stock')"><div class="widget-icon">🛒</div><div>Courses</div></div>` + grid.innerHTML;
+            grid.innerHTML = `<div class="widget-card bg-courses" onclick="openApp('app-courses', '🛒 Courses & Stock')"><div class="widget-icon">🛒</div><div>Courses<br><small style="opacity:0.85;">Tribu</small></div></div>` + grid.innerHTML;
         }
     }
 
@@ -409,7 +465,233 @@
         document.getElementById('backBtn').style.display = 'none';
     }
 
-    // --- 2. COURSES AVEC CRÉATION AUTOMATIQUE DU RAYON "📦 DIVERS" ---
+    // --- 2. EXERCICES P1 À P6 ALÉATOIRES & INFINIS ---
+    let currentExercises = [];
+
+    // Banques de mots et structures aléatoires
+    const subjectsList = ["Le chat", "Mon frère", "La maîtresse", "Les oiseaux", "Le train", "Maman", "Papa", "Elina", "Amanda"];
+    const verbsP1P3 = [
+        { inf: "manger", p1: "mange", p2: "mangeons", p3: "mangent" },
+        { inf: "chanter", p1: "chante", p2: "chantons", p3: "chantent" },
+        { inf: "aimer", p1: "aime", p2: "aimons", p3: "aiment" }
+    ];
+    const dictWords = {
+        P1: ["vélo", "chapeau", "arbre", "table", "porte", "soleil", "lune", "lit"],
+        P2: ["maison", "bateau", "pomme", "souris", "garçon", "cahier", "stylo", "fromage"],
+        P3: ["village", "demain", "toujours", "fenêtre", "campagne", "gâteau", "jardin", "histoire"],
+        P4: ["bibliothèque", "voyageur", "paysage", "nourriture", "bicyclette", "silhouette"],
+        P5: ["circonstance", "scrupuleusement", "médicament", "phénomène", "atmosphère"],
+        P6: ["extraordinaire", "bienveillance", "interruption", "enthousiasme", "incompréhension"]
+    };
+
+    function randomChoice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function generateSchoolExercises() {
+        const grade = document.getElementById('gradeSelect').value;
+        const subj = document.getElementById('subjectSelect').value;
+        const count = parseInt(document.getElementById('countSelect').value);
+        const container = document.getElementById('schoolOutput');
+        container.innerHTML = "";
+        currentExercises = [];
+
+        for (let i = 0; i < count; i++) {
+            let q = "", a = "";
+
+            if (subj === 'math') {
+                if (grade === 'P1') {
+                    let a1 = Math.floor(Math.random() * 9) + 1, a2 = Math.floor(Math.random() * 9) + 1;
+                    q = `${a1} + ${a2} =`; a = (a1 + a2).toString();
+                } else if (grade === 'P2') {
+                    let a1 = Math.floor(Math.random() * 40) + 10, a2 = Math.floor(Math.random() * 20) + 1;
+                    let op = Math.random() > 0.5 ? "+" : "-";
+                    if (op === "+") { q = `${a1} + ${a2} =`; a = (a1 + a2).toString(); }
+                    else { q = `${a1} - ${a2} =`; a = (a1 - a2).toString(); }
+                } else if (grade === 'P3') {
+                    let a1 = Math.floor(Math.random() * 9) + 2, a2 = Math.floor(Math.random() * 9) + 2;
+                    q = `${a1} × ${a2} =`; a = (a1 * a2).toString();
+                } else if (grade === 'P4') {
+                    let a1 = Math.floor(Math.random() * 40) + 10, a2 = Math.floor(Math.random() * 8) + 2;
+                    q = `${a1} × ${a2} =`; a = (a1 * a2).toString();
+                } else if (grade === 'P5') {
+                    let d1 = (Math.random() * 30 + 5).toFixed(1), d2 = (Math.random() * 20 + 2).toFixed(1);
+                    q = `${d1} + ${d2} =`; a = (parseFloat(d1) + parseFloat(d2)).toFixed(1);
+                } else {
+                    let mult = Math.floor(Math.random() * 12) + 2;
+                    let div = Math.floor(Math.random() * 8) + 2;
+                    let total = mult * div;
+                    q = `${total} ÷ ${div} =`; a = mult.toString();
+                }
+            } else if (subj === 'fr') {
+                const s = randomChoice(subjectsList);
+                const v = randomChoice(verbsP1P3);
+                if (grade === 'P1' || grade === 'P2') {
+                    q = `Complète avec le mot correct : "${s} ... (dort / dorment)"`; a = s.includes("Les") ? "dorment" : "dort";
+                } else if (grade === 'P3' || grade === 'P4') {
+                    q = `Conjugue au présent : "${s} (${v.inf})"`; a = s.includes("Les") ? v.p3 : v.p1;
+                } else {
+                    q = `Trouve le pluriel de : "Un cheval" (ou "Un travail")`; a = "chevaux";
+                }
+            } else if (subj === 'dictee') {
+                const word = randomChoice(dictWords[grade] || dictWords['P3']);
+                const hiddenIndex = Math.floor(Math.random() * (word.length - 1));
+                const masked = word.substring(0, hiddenIndex) + "_" + word.substring(hiddenIndex + 1);
+                q = `Complète la lettre manquante : "${masked}" (Mot: ${word})`; a = word[hiddenIndex];
+            } else if (subj === 'lecture') {
+                const colors = ["rouge", "bleu", "jaune", "vert"];
+                const c = randomChoice(colors);
+                q = `Texte : "Léa range son vélo ${c} dans le garage." ➔ De quelle couleur est le vélo ?`;
+                a = c;
+            } else {
+                const qList = [
+                    { q: "Quelle est la capitale de la Belgique ?", a: "bruxelles" },
+                    { q: "Combien de jours y a-t-il dans une année standard ?", a: "365" },
+                    { q: "Quel organe permet de faire circuler le sang ?", a: "coeur" },
+                    { q: "Quel est l'animal le plus rapide sur terre ?", a: "guepard" }
+                ];
+                const item = randomChoice(qList);
+                q = item.q; a = item.a;
+            }
+
+            currentExercises.push({ question: q, answer: a.toLowerCase() });
+        }
+
+        currentExercises.forEach((ex, idx) => {
+            const div = document.createElement('div');
+            div.className = "exercise-item";
+            div.id = `ex-row-${idx}`;
+            div.innerHTML = `
+                <div><strong>${idx + 1}.</strong> ${ex.question}</div>
+                <div style="margin-top:6px;"><input type="text" id="ans-${idx}" placeholder="Ta réponse..."></div>
+            `;
+            container.appendChild(div);
+        });
+
+        document.getElementById('schoolInteractiveActions').style.display = 'block';
+        document.getElementById('schoolFeedback').innerText = "";
+    }
+
+    function verifySchoolAnswers() {
+        let correct = 0;
+        currentExercises.forEach((ex, idx) => {
+            const row = document.getElementById(`ex-row-${idx}`);
+            const val = document.getElementById(`ans-${idx}`).value.trim().toLowerCase();
+            if (val === ex.answer || (ex.answer === "" && val.length > 0)) {
+                row.className = "exercise-item correct"; correct++;
+            } else {
+                row.className = "exercise-item wrong";
+            }
+        });
+
+        const fb = document.getElementById('schoolFeedback');
+        fb.innerText = `Score : ${correct} / ${currentExercises.length}`;
+        fb.style.color = correct === currentExercises.length ? "#059669" : "#d97706";
+
+        if (currentUser) {
+            recordGameScore('Exercices ' + document.getElementById('gradeSelect').value, correct * 10);
+        }
+    }
+
+    let printQueue = [];
+    function addExerciseToPrint() {
+        const content = document.getElementById('schoolOutput').innerHTML;
+        if (!content) return;
+        printQueue.push(content);
+        renderPrintQueue();
+        alert("Ajouté à la feuille d'impression !");
+    }
+    function renderPrintQueue() {
+        const zone = document.getElementById('printQueueContent');
+        if (printQueue.length === 0) { zone.innerHTML = "Aucun exercice en attente."; return; }
+        zone.innerHTML = "";
+        printQueue.forEach((b, idx) => {
+            const div = document.createElement('div');
+            div.className = "print-entry";
+            div.innerHTML = `<h3>Série ${idx + 1}</h3>` + b;
+            zone.appendChild(div);
+        });
+    }
+    function clearPrintQueue() { printQueue = []; renderPrintQueue(); }
+
+    // --- 3. AIRLINE & TYCOON MANAGER ---
+    let tycoonData = {
+        money: 150000,
+        fuel: 5000,
+        reputation: 100,
+        planes: 1,
+        terminalLevel: 1
+    };
+
+    function initTycoon() {
+        dbFirebase.ref('tycoon').on('value', snap => {
+            if (snap.val()) tycoonData = snap.val();
+            updateTycoonUI();
+        });
+    }
+
+    function updateTycoonUI() {
+        document.getElementById('mngMoney').innerText = tycoonData.money.toLocaleString();
+        document.getElementById('mngFuel').innerText = tycoonData.fuel.toLocaleString();
+        document.getElementById('mngRep').innerText = tycoonData.reputation;
+        document.getElementById('companySummary').innerText = `Flotte : ${tycoonData.planes} avion(s) | Terminal Niv. ${tycoonData.terminalLevel}`;
+    }
+
+    function saveTycoon() {
+        updateTycoonUI();
+        dbFirebase.ref('tycoon').set(tycoonData);
+    }
+
+    function launchFlight() {
+        const route = document.getElementById('flightRouteSelect').value;
+        const res = document.getElementById('flightResult');
+
+        let cost = 1200, gain = 4500, fuelNeeded = 800;
+        if (route === 'nice') { cost = 3000; gain = 9800; fuelNeeded = 1800; }
+        if (route === 'rome') { cost = 4500; gain = 14000; fuelNeeded = 2500; }
+        if (route === 'ny') { cost = 18000; gain = 55000; fuelNeeded = 6000; }
+
+        if (tycoonData.fuel < fuelNeeded) {
+            res.innerText = "❌ Pas assez de carburant ! Achetez du kérosène.";
+            res.style.color = "#ef4444"; return;
+        }
+        if (tycoonData.money < cost) {
+            res.innerText = "❌ Trésorerie insuffisante pour assurer ce vol.";
+            res.style.color = "#ef4444"; return;
+        }
+
+        tycoonData.fuel -= fuelNeeded;
+        tycoonData.money += (gain - cost);
+        tycoonData.reputation = Math.min(100, tycoonData.reputation + 1);
+        res.innerText = `✅ Vol réussi ! Bénéfice net : +${(gain - cost).toLocaleString()} € !`;
+        res.style.color = "#059669";
+        saveTycoon();
+        recordGameScore('Airline Tycoon (€)', tycoonData.money);
+    }
+
+    function buyFuel() {
+        if (tycoonData.money >= 3000) {
+            tycoonData.money -= 3000;
+            tycoonData.fuel += 5000;
+            saveTycoon();
+        } else alert("Pas assez d'argent.");
+    }
+    function upgradeTerminal() {
+        if (tycoonData.money >= 25000) {
+            tycoonData.money -= 25000;
+            tycoonData.terminalLevel += 1;
+            saveTycoon();
+        } else alert("Pas assez d'argent.");
+    }
+    function buyPlane(type) {
+        let price = type === 'ATR72' ? 40000 : 95000;
+        if (tycoonData.money >= price) {
+            tycoonData.money -= price;
+            tycoonData.planes += 1;
+            saveTycoon();
+            alert("Nouvel avion acheté et intégré à la flotte !");
+        } else alert("Trésorerie insuffisante.");
+    }
+
+    // --- 4. COURSES AVEC CATÉGORIES ET DIVERS ---
     let currentCourses = [
         { id: 1, name: "Petits sacs poubelles", category: "🧼 Entretien & Maison", quantity: 1, checked: false },
         { id: 2, name: "Andalouse", category: "🍪 Collations & Épicerie", quantity: 1, checked: false },
@@ -449,8 +731,8 @@
     }
 
     function initCourses() {
-        const loc = localStorage.getItem('tribu_courses_v5');
-        const locCat = localStorage.getItem('tribu_catalog_v5');
+        const loc = localStorage.getItem('tribu_courses_final');
+        const locCat = localStorage.getItem('tribu_catalog_final');
         if (loc) currentCourses = JSON.parse(loc);
         if (locCat) categorizedCatalogData = JSON.parse(locCat);
 
@@ -467,8 +749,8 @@
     }
 
     function pushToFirebase() {
-        localStorage.setItem('tribu_courses_v5', JSON.stringify(currentCourses));
-        localStorage.setItem('tribu_catalog_v5', JSON.stringify(categorizedCatalogData));
+        localStorage.setItem('tribu_courses_final', JSON.stringify(currentCourses));
+        localStorage.setItem('tribu_catalog_final', JSON.stringify(categorizedCatalogData));
         renderUnifiedCourses();
         renderCategorizedCatalog();
         dbFirebase.ref('coursesTribu').set({ list: currentCourses, catalog: categorizedCatalogData });
@@ -484,7 +766,7 @@
             div.className = `item-row ${it.checked ? 'checked' : ''}`;
             div.innerHTML = `
                 <div><strong>${it.name}</strong> <span class="item-category-tag">${it.category || '📦 Divers'}</span></div>
-                <div class="item-actions">
+                <div style="display:flex; gap:6px; align-items:center;">
                     <input type="number" class="qty-inline" value="${it.quantity}" min="1" onchange="updateCourseQty(${it.id}, this.value)">
                     <button class="check-btn" onclick="toggleCourse(${it.id})">✓</button>
                     <button class="remove-btn" onclick="deleteCourse(${it.id})">✕</button>
@@ -530,7 +812,6 @@
         const formatted = val.charAt(0).toUpperCase() + val.slice(1);
         let category = catSelect.value === 'auto' ? detectCategory(formatted) : catSelect.value;
 
-        // Auto-apprentissage : on crée la catégorie dans le catalogue si elle n'existe pas
         if (!categorizedCatalogData[category]) categorizedCatalogData[category] = [];
         if (!categorizedCatalogData[category].includes(formatted)) categorizedCatalogData[category].push(formatted);
 
@@ -560,40 +841,35 @@
         else { navigator.clipboard.writeText(text); alert("Liste copiée !"); }
     }
 
-    // --- 3. RECETTES DE CUISINE & AJOUT DIRECT COURSES ---
+    // --- 5. RECETTES DE CUISINE ---
     let myRecipes = [
-        { id: 1, title: "Pancakes du Dimanche", ingredients: ["Farine pâtisserie", "Oeufs Plein Air", "Lait", "Beurre", "Sucre"] },
+        { id: 1, title: "Pancakes du Dimanche", ingredients: ["Farine pâtisserie", "Oeufs Plein Air", "Lait", "Beurre"] },
         { id: 2, title: "Pâtes bolognaise maison", ingredients: ["Nouilles", "Haché de poulet", "Sauces tomates croque", "Parmesan"] }
     ];
-
     function initRecipes() {
         dbFirebase.ref('recipes').on('value', snap => {
             if (snap.val()) myRecipes = snap.val();
             renderRecipes();
         });
     }
-
     function renderRecipes() {
         const box = document.getElementById('recipesContainer');
         box.innerHTML = "";
         myRecipes.forEach(rec => {
             const card = document.createElement('div');
-            card.style.background = "#fff"; card.style.border = "1px solid var(--border-light)";
-            card.style.borderRadius = "12px"; card.style.padding = "14px"; card.style.marginBottom = "10px";
+            card.className = "tycoon-card";
             card.innerHTML = `
                 <h4 style="margin:0 0 6px 0;">${rec.title}</h4>
                 <p style="font-size:0.9em; color:var(--text-muted); margin:0 0 10px 0;">Ingrédients : ${rec.ingredients.join(', ')}</p>
-                <button class="btn-action" style="background:#0d9488; margin:0;" onclick="addRecipeToCourses(${rec.id})">🛒 Ajouter les ingrédients aux courses</button>
+                <button class="btn-action" style="margin:0;" onclick="addRecipeToCourses(${rec.id})">🛒 Ajouter les ingrédients aux courses</button>
             `;
             box.appendChild(card);
         });
     }
-
     function showNewRecipeForm() {
         const form = document.getElementById('newRecipeForm');
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
     }
-
     function saveRecipe() {
         const title = document.getElementById('recTitle').value.trim();
         const ingStr = document.getElementById('recIngredients').value.trim();
@@ -601,11 +877,9 @@
         const ingredients = ingStr.split(',').map(s => s.trim()).filter(Boolean);
         myRecipes.push({ id: Date.now(), title, ingredients });
         dbFirebase.ref('recipes').set(myRecipes);
-        document.getElementById('recTitle').value = "";
-        document.getElementById('recIngredients').value = "";
+        document.getElementById('recTitle').value = ""; document.getElementById('recIngredients').value = "";
         showNewRecipeForm();
     }
-
     function addRecipeToCourses(recId) {
         const rec = myRecipes.find(r => r.id === recId);
         if (!rec) return;
@@ -616,21 +890,17 @@
             else currentCourses.push({ id: Date.now() + Math.random(), name: name, category: cat, quantity: 1, checked: false });
         });
         pushToFirebase();
-        alert(`Tous les ingrédients de "${rec.title}" ont été ajoutés à vos courses !`);
+        alert(`Ingrédients de "${rec.title}" ajoutés aux courses !`);
     }
 
-    // --- 4. AGENDA FAMILIAL & SCANNER DE PHOTO CALENDRIER ---
-    let familyAgenda = [
-        { id: 1, date: "2026-10-25", title: "Anniversaire Famille" }
-    ];
-
+    // --- 6. AGENDA FAMILIAL & SCANNER OCR ---
+    let familyAgenda = [{ id: 1, date: "2026-10-25", title: "Anniversaire Famille" }];
     function initAgenda() {
         dbFirebase.ref('agenda').on('value', snap => {
             if (snap.val()) familyAgenda = snap.val();
             renderAgenda();
         });
     }
-
     function renderAgenda() {
         const box = document.getElementById('agendaList');
         box.innerHTML = "";
@@ -641,7 +911,6 @@
             box.appendChild(div);
         });
     }
-
     function addCalendarEvent() {
         const d = document.getElementById('eventDate').value;
         const t = document.getElementById('eventTitle').value.trim();
@@ -650,98 +919,30 @@
         dbFirebase.ref('agenda').set(familyAgenda);
         document.getElementById('eventTitle').value = "";
     }
-
     function deleteAgendaEvent(id) {
         familyAgenda = familyAgenda.filter(e => e.id !== id);
         dbFirebase.ref('agenda').set(familyAgenda);
     }
-
     function scanCalendarPhoto(event) {
         const file = event.target.files[0];
         if (!file) return;
         const st = document.getElementById('ocrStatus');
-        st.innerText = "⏳ Analyse du calendrier en cours (IA OCR)...";
-        
+        st.innerText = "⏳ Analyse OCR en cours...";
         Tesseract.recognize(file, 'fra').then(({ data: { text } }) => {
-            st.innerText = "✅ Analyse terminée ! Événements ajoutés.";
+            st.innerText = "✅ Événements analysés !";
             const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
-            lines.slice(0, 5).forEach(line => {
-                familyAgenda.push({
-                    id: Date.now() + Math.random(),
-                    date: new Date().toISOString().split('T')[0],
-                    title: line
-                });
+            lines.slice(0, 4).forEach(line => {
+                familyAgenda.push({ id: Date.now() + Math.random(), date: new Date().toISOString().split('T')[0], title: line });
             });
             dbFirebase.ref('agenda').set(familyAgenda);
-        }).catch(err => {
-            st.innerText = "❌ Erreur de lecture de l'image.";
-        });
+        }).catch(() => { st.innerText = "❌ Erreur de lecture."; });
     }
 
-    // --- 5. JEU DE GESTION : MON VILLAGE TRIBU ---
-    let villageData = {
-        wood: 15, stone: 10, gold: 30,
-        slots: ["🏠", "🌳", "🌾", "🕳️", "🕳️", "🕳️", "🕳️", "🕳️"]
-    };
-
-    function initVillage() {
-        dbFirebase.ref('village').on('value', snap => {
-            if (snap.val()) villageData = snap.val();
-            updateVillageUI();
-        });
-    }
-
-    function updateVillageUI() {
-        document.getElementById('resWood').innerText = villageData.wood;
-        document.getElementById('resStone').innerText = villageData.stone;
-        document.getElementById('resGold').innerText = villageData.gold;
-        const b = document.getElementById('villageBoard');
-        b.innerHTML = "";
-        villageData.slots.forEach((item, idx) => {
-            const div = document.createElement('div');
-            div.className = "village-slot";
-            div.innerText = item;
-            div.onclick = () => buildOnSlot(idx);
-            b.appendChild(div);
-        });
-    }
-
-    function gatherResource(type) {
-        if (type === 'wood') villageData.wood += 5;
-        if (type === 'stone') villageData.stone += 3;
-        villageData.gold += 2;
-        saveVillage();
-    }
-
-    function buildOnSlot(idx) {
-        if (villageData.slots[idx] !== "🕳️") {
-            villageData.slots[idx] = "🕳️"; // détruire
-            villageData.gold += 5;
-        } else {
-            if (villageData.wood >= 10 && villageData.stone >= 5) {
-                villageData.wood -= 10; villageData.stone -= 5;
-                const buildings = ["🏠", "🥖", " windmill 🌾", "⛲", "🎡"];
-                villageData.slots[idx] = buildings[Math.floor(Math.random()*buildings.length)];
-            } else {
-                alert("Ressources insuffisantes ! Récolte du bois et de la pierre d'abord.");
-            }
-        }
-        saveVillage();
-    }
-
-    function saveVillage() {
-        updateVillageUI();
-        dbFirebase.ref('village').set(villageData);
-    }
-
-    // --- 6. TABLEAU DES SCORES PAR UTILISATEUR ---
+    // --- 7. SCORES D'HONNEUR PAR JOUEUR ---
     function recordGameScore(gameName, score) {
         if (!currentUser) return;
-        dbFirebase.ref(`scores/${gameName}/${currentUser}`).transaction(curr => {
-            return Math.max(curr || 0, score);
-        });
+        dbFirebase.ref(`scores/${gameName}/${currentUser}`).transaction(curr => Math.max(curr || 0, score));
     }
-
     function renderScores() {
         const box = document.getElementById('scoresLeaderboard');
         box.innerHTML = "Chargement des scores...";
@@ -751,7 +952,7 @@
             for (const [game, players] of Object.entries(data)) {
                 const card = document.createElement('div');
                 card.className = "catalog-cat-card";
-                card.innerHTML = `<div class="catalog-cat-title">Jeu : ${game}</div>`;
+                card.innerHTML = `<div class="catalog-cat-title">${game}</div>`;
                 for (const [player, sc] of Object.entries(players)) {
                     card.innerHTML += `<div class="item-row" style="border:none;"><span>👤 ${player}</span><strong>${sc} pts</strong></div>`;
                 }
@@ -760,7 +961,13 @@
         });
     }
 
-    // --- 7. MOTEUR NOKIA 3310 SNAKE ---
+    // --- 8. SNAKE NOKIA 3310 & JEUX ---
+    function switchGameSubView() {
+        const val = document.getElementById('gameSubSelect').value;
+        document.getElementById('sub-snake').style.display = val === 'snake' ? 'block' : 'none';
+        document.getElementById('sub-reflex').style.display = val === 'reflex' ? 'block' : 'none';
+    }
+
     const sCanvas = document.getElementById('snakeCanvas');
     const sCtx = sCanvas.getContext('2d');
     let snake = [], food = {}, snakeDir = 'RIGHT', nextSnakeDir = 'RIGHT', snakeScore = 0, snakeInterval = null;
@@ -773,33 +980,28 @@
         food = { x: 100, y: 100 };
         snakeInterval = setInterval(updateSnake, 120);
     }
-
     function setSnakeDir(d) {
         if (d === 'UP' && snakeDir !== 'DOWN') nextSnakeDir = 'UP';
         if (d === 'DOWN' && snakeDir !== 'UP') nextSnakeDir = 'DOWN';
         if (d === 'LEFT' && snakeDir !== 'RIGHT') nextSnakeDir = 'LEFT';
         if (d === 'RIGHT' && snakeDir !== 'LEFT') nextSnakeDir = 'RIGHT';
     }
-
     function updateSnake() {
         snakeDir = nextSnakeDir;
         let hX = snake[0].x, hY = snake[0].y;
         if (snakeDir === 'UP') hY -= 10; if (snakeDir === 'DOWN') hY += 10;
         if (snakeDir === 'LEFT') hX -= 10; if (snakeDir === 'RIGHT') hX += 10;
-
         if (hX < 0 || hX >= 280 || hY < 0 || hY >= 200) {
             clearInterval(snakeInterval);
             recordGameScore('Snake 3310', snakeScore);
-            alert("Game Over ! Score: " + snakeScore); return;
+            alert("Game Over ! Score : " + snakeScore); return;
         }
-
         const head = { x: hX, y: hY };
         if (hX === food.x && hY === food.y) {
             snakeScore += 10;
             document.getElementById('snakeScore').innerText = snakeScore;
             food = { x: Math.floor(Math.random()*28)*10, y: Math.floor(Math.random()*20)*10 };
         } else { snake.pop(); }
-
         snake.unshift(head);
         sCtx.fillStyle = "#879f79"; sCtx.fillRect(0,0,280,200);
         sCtx.fillStyle = "#2b3925";
@@ -807,7 +1009,6 @@
         snake.forEach(p => sCtx.fillRect(p.x+1, p.y+1, 8, 8));
     }
 
-    // --- 8. JEU DE REFLEXES ---
     let reflexScore = 0, moleHole = -1;
     function startReflexGame() {
         reflexScore = 0;
@@ -816,32 +1017,16 @@
             for (let i = 0; i < 6; i++) document.getElementById(`hole-${i}`).innerText = "🕳️";
             moleHole = Math.floor(Math.random()*6);
             document.getElementById(`hole-${moleHole}`).innerText = "🐹";
-        }, 900);
+        }, 850);
     }
     function hitHole(idx) {
         if (idx === moleHole) {
             reflexScore++;
-            document.getElementById('reflexScore').innerText = reflexScore;
+          ǰ  document.getElementById('reflexScore').innerText = reflexScore;
             document.getElementById(`hole-${idx}`).innerText = "💥";
             recordGameScore('Tape-Taupes', reflexScore);
             moleHole = -1;
         }
-    }
-
-    // --- 9. EXERCICES SCOLAIRES P1-P6 ---
-    function generateSchoolExercises() {
-        const grade = document.getElementById('gradeSelect').value;
-        const box = document.getElementById('schoolOutput');
-        box.innerHTML = `<strong>Exercices ${grade} :</strong><br>`;
-        for (let i = 1; i <= 4; i++) {
-            let n1 = Math.floor(Math.random()*15)+1, n2 = Math.floor(Math.random()*10)+1;
-            box.innerHTML += `<div style="margin:8px 0;">${i}. ${n1} + ${n2} = <input type="number" id="sc-${i}" style="width:70px; padding:6px;"></div>`;
-        }
-        document.getElementById('schoolInteractiveActions').style.display = 'block';
-    }
-    function verifySchoolAnswers() {
-        alert("Bravo ! Réponses enregistrées.");
-        recordGameScore('Exercices Maths', 20);
     }
 </script>
 </body>
